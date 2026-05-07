@@ -18,6 +18,10 @@ RSS_FEEDS = {
         "https://www3.nhk.or.jp/rss/news/cat6.xml",
         "https://feeds.reuters.com/reuters/JPpoliticsNews",
     ],
+    "金融": [
+        "https://feeds.reuters.com/reuters/JPfinancialServicesAndRealEstateNews",
+        "https://www3.nhk.or.jp/rss/news/cat4.xml",
+    ],
     "国際": [
         "https://www3.nhk.or.jp/rss/news/cat7.xml",
         "https://feeds.reuters.com/reuters/JPworldNews",
@@ -27,6 +31,9 @@ RSS_FEEDS = {
         "https://www3.nhk.or.jp/rss/news/cat4.xml",
     ],
 }
+
+# スポーツニュースを除外するカテゴリー
+EXCLUDE_SPORTS = {"国際"}
 
 
 def clean(text):
@@ -56,12 +63,14 @@ def summarize(client, category, news_items):
 
     news_text = "\n".join(news_items)
 
+    exclude_note = "スポーツ関連のニュースは除外してください。" if category in EXCLUDE_SPORTS else ""
+
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=800,
         messages=[{
             "role": "user",
-            "content": f"""以下の「{category}」ニュースから重要な3件を選び、日本語で簡潔にまとめてください。
+            "content": f"""以下の「{category}」ニュースから重要な3件を選び、日本語で簡潔にまとめてください。{exclude_note}
 
 形式（この形式を厳守）：
 1. [タイトル]
