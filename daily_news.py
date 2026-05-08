@@ -34,6 +34,8 @@ RSS_FEEDS = {
     ],
 }
 
+EXCLUDE_SPORTS = {"国際政治"}
+
 
 def clean(text):
     return re.sub(r"<[^>]+>", "", text or "").strip()
