@@ -17,7 +17,8 @@ RSS_FEEDS = {
         "https://www3.nhk.or.jp/rss/news/cat4.xml",
     ],
     "ビジネス": [
-        BASE + "%E4%BC%81%E6%A5%AD+%E7%B5%8C%E5%96%B6+%E6%88%A6%E7%95%A5",       # 企業 経営 戦略
+        BASE + "%E4%BC%81%E6%A5%AD%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9+%E6%97%A5%E6%9C%AC",  # 企業ニュース 日本
+        "https://www3.nhk.or.jp/rss/news/cat4.xml",
     ],
     "マーケット": [
         BASE + "%E6%A0%AA%E5%BC%8F+%E7%82%BA%E6%9B%BF+%E5%B8%82%E5%A0%B4",       # 株式 為替 市場
