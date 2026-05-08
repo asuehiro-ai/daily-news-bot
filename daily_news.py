@@ -9,33 +9,30 @@ import datetime
 import os
 import re
 
-# 各カテゴリー専用のRSSフィード（重複を避けるため分離）
+# Google News RSS（キーワード検索型・安定稼働）
+BASE = "https://news.google.com/rss/search?hl=ja&gl=JP&ceid=JP:ja&q="
 RSS_FEEDS = {
     "経済": [
+        BASE + "%E6%97%A5%E6%9C%AC%E7%B5%8C%E6%B8%88+%E6%99%AF%E6%B0%97",        # 日本経済 景気
         "https://www3.nhk.or.jp/rss/news/cat4.xml",
     ],
     "ビジネス": [
-        "https://feeds.reuters.com/reuters/JPbusinessNews",
+        BASE + "%E4%BC%81%E6%A5%AD+%E7%B5%8C%E5%96%B6+%E6%88%A6%E7%95%A5",       # 企業 経営 戦略
     ],
     "マーケット": [
-        "https://feeds.reuters.com/reuters/JPmarketsNews",
-        "https://feeds.reuters.com/reuters/JPfinancialServicesAndRealEstateNews",
+        BASE + "%E6%A0%AA%E5%BC%8F+%E7%82%BA%E6%9B%BF+%E5%B8%82%E5%A0%B4",       # 株式 為替 市場
     ],
     "国内政治": [
+        BASE + "%E5%9B%BD%E5%86%85%E6%94%BF%E6%B2%BB+%E5%9B%BD%E4%BC%9A",        # 国内政治 国会
         "https://www3.nhk.or.jp/rss/news/cat6.xml",
-        "https://feeds.reuters.com/reuters/JPpoliticsNews",
     ],
     "国際政治": [
-        "https://www3.nhk.or.jp/rss/news/cat7.xml",
-        "https://feeds.reuters.com/reuters/JPworldNews",
+        BASE + "%E5%9B%BD%E9%9A%9B%E6%94%BF%E6%B2%BB+%E5%A4%96%E4%BA%A4",        # 国際政治 外交
     ],
     "M&A": [
-        "https://feeds.reuters.com/reuters/JPmergers",
+        BASE + "M%26A+%E4%BC%81%E6%A5%AD%E8%B2%B7%E5%8F%8E+%E5%90%88%E4%BD%B5",  # M&A 企業買収 合併
     ],
 }
-
-# スポーツニュースを除外するカテゴリー
-EXCLUDE_SPORTS = {"国際政治"}
 
 
 def clean(text):
