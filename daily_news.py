@@ -9,38 +9,43 @@ import datetime
 import os
 import re
 
+# 各カテゴリー専用のRSSフィード（重複を避けるため分離）
 RSS_FEEDS = {
     "経済": [
         "https://www3.nhk.or.jp/rss/news/cat4.xml",
+    ],
+    "ビジネス": [
         "https://feeds.reuters.com/reuters/JPbusinessNews",
     ],
-    "政治": [
+    "マーケット": [
+        "https://feeds.reuters.com/reuters/JPmarketsNews",
+        "https://feeds.reuters.com/reuters/JPfinancialServicesAndRealEstateNews",
+    ],
+    "国内政治": [
         "https://www3.nhk.or.jp/rss/news/cat6.xml",
         "https://feeds.reuters.com/reuters/JPpoliticsNews",
     ],
-    "金融": [
-        "https://feeds.reuters.com/reuters/JPfinancialServicesAndRealEstateNews",
-        "https://www3.nhk.or.jp/rss/news/cat4.xml",
-    ],
-    "国際": [
+    "国際政治": [
         "https://www3.nhk.or.jp/rss/news/cat7.xml",
         "https://feeds.reuters.com/reuters/JPworldNews",
     ],
     "M&A": [
         "https://feeds.reuters.com/reuters/JPmergers",
-        "https://www3.nhk.or.jp/rss/news/cat4.xml",
     ],
 }
 
 # スポーツニュースを除外するカテゴリー
-EXCLUDE_SPORTS = {"国際"}
+EXCLUDE_SPORTS = {"国際政治"}
 
 
 def clean(text):
     return re.sub(r"<[^>]+>", "", text or "").strip()
 
 
-def fetch_news(feeds, max_items=6):
+def fetch_news(feeds, max_items=8, used_titles=None):
+    """RSSフィードからニュースを取得（他カテゴリーと重複しないようにする）"""
+    if used_titles is None:
+        used_titles = set()
     items = []
     for url in feeds:
         try:
@@ -48,13 +53,14 @@ def fetch_news(feeds, max_items=6):
             for entry in feed.entries:
                 title = clean(entry.get("title", ""))
                 summary = clean(entry.get("summary", entry.get("description", "")))[:300]
-                if title:
+                if title and title not in used_titles:
                     items.append(f"・{title}：{summary}")
+                    used_titles.add(title)
                 if len(items) >= max_items:
                     return items
         except Exception as e:
             print(f"Warning: {url} の取得失敗: {e}")
-    return items[:max_items]
+    return items
 
 
 def summarize(client, category, news_items):
@@ -62,7 +68,6 @@ def summarize(client, category, news_items):
         return "本日のニュースを取得できませんでした。"
 
     news_text = "\n".join(news_items)
-
     exclude_note = "スポーツ関連のニュースは除外してください。" if category in EXCLUDE_SPORTS else ""
 
     response = client.messages.create(
@@ -117,9 +122,12 @@ def main():
 
     parts = [f"おはようございます。本日（{date_str}）の主要ニュースです。"]
 
+    # カテゴリーをまたいで重複タイトルを管理
+    used_titles = set()
+
     for category, feeds in RSS_FEEDS.items():
         print(f"{category} 取得・要約中...")
-        news_items = fetch_news(feeds)
+        news_items = fetch_news(feeds, used_titles=used_titles)
         summary = summarize(client, category, news_items)
 
         parts.append("")
