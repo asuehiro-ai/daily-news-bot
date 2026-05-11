@@ -43,9 +43,10 @@ def clean(text):
 
 
 def fetch_news(feeds, max_items=8, used_titles=None):
-    """RSSフィードからニュースを取得（他カテゴリーと重複しないようにする）"""
+    """RSSフィードからニュースを取得（48時間以内の新着のみ・重複除外）"""
     if used_titles is None:
         used_titles = set()
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=48)
     items = []
     for url in feeds:
         try:
@@ -53,6 +54,14 @@ def fetch_news(feeds, max_items=8, used_titles=None):
             for entry in feed.entries:
                 title = clean(entry.get("title", ""))
                 summary = clean(entry.get("summary", entry.get("description", "")))[:300]
+
+                # 48時間より古い記事はスキップ
+                published = entry.get("published_parsed")
+                if published:
+                    pub_dt = datetime.datetime(*published[:6])
+                    if pub_dt < cutoff:
+                        continue
+
                 if title and title not in used_titles:
                     items.append(f"・{title}：{summary}")
                     used_titles.add(title)
