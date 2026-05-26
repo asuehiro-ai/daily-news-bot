@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="株式会社LEGは、M&A仲介・事業承継支援を専門とするコンサルティング会社です。大切な会社の未来を、共に考えます。">
+    <title>株式会社LEG | M&A仲介・事業承継支援</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary:      #005060;
+            --primary-dark: #002e3a;
+            --primary-mid:  #006d86;
+            --primary-pale: #e0f3f6;
+            --accent:       #c07228;
+            --accent-light: #e8a85a;
+            --text:         #1a2533;
+            --text-muted:   #6b7c93;
+            --white:        #ffffff;
+            --gray-50:      #f6f8fa;
+            --gray-100:     #edf1f5;
+            --gray-200:     #dde4ec;
+            --radius:       10px;
+            --shadow:       0 4px 28px rgba(0,50,70,.09);
+            --shadow-lg:    0 12px 48px rgba(0,50,70,.18);
+            --ease:         all .3s cubic-bezier(.4,0,.2,1);
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Noto Sans JP', 'Hiragino Sans', Meiryo, sans-serif;
+            color: var(--text); line-height: 1.8; background: #fff;
+        }
+        a { color: var(--primary); text-decoration: none; transition: var(--ease); }
+        a:hover { color: var(--primary-mid); }
+        img { max-width: 100%; height: auto; display: block; }
+        .container { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+        .section { padding: 100px 0; }
+        .section-alt { background: var(--gray-50); }
+        .section-dark { background: var(--primary-dark); color: #fff; }
+        .section-sub {
+            text-align: center; font-size: .74rem; letter-spacing: .2em;
+            color: var(--accent); margin-bottom: 10px; text-transform: uppercase;
+            font-weight: 500;
+        }
+        .section-dark .section-sub { color: var(--accent-light); }
+        .section-title {
+            font-family: 'Noto Serif JP', serif; font-size: clamp(1.7rem,3vw,2.1rem);
+            font-weight: 700; color: var(--primary); text-align: center; letter-spacing: .03em;
+        }
+        .section-dark .section-title { color: #fff; }
+        .section-bar {
+            width: 40px; height: 3px; background: var(--accent);
+            border-radius: 2px; margin: 14px auto 56px;
+        }
+        .section-dark .section-bar { background: var(--accent-light); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 36px; border-radius: 5px; font-size: .9rem;
+            font-weight: 500; letter-spacing: .04em; cursor: pointer;
+            transition: var(--ease); border: 2px solid transparent;
+            font-family: inherit;
+        }
+        .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-mid); border-color: var(--primary-mid); color: #fff; transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .btn-ghost-white { background: transparent; color: rgba(255,255,255,.9); border-color: rgba(255,255,255,.45); }
+        .btn-ghost-white:hover { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.75); transform: translateY(-2px); }
+        .btn-white { background: #fff; color: var(--primary); border-color: #fff; }
+        .btn-white:hover { background: var(--primary-pale); transform: translateY(-2px); }
+        .btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+        .btn svg { flex-shrink: 0; }
+
+        /* ── HEADER ─────────────────────────────────── */
+        #header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(255,255,255,.96);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,80,96,.08);
+            transition: var(--ease);
+        }
+        #header.scrolled { box-shadow: 0 2px 24px rgba(0,30,50,.1); }
+        .header-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+        .logo { display: flex; flex-direction: column; line-height: 1; }
+        .logo-en { font-family: 'Noto Serif JP', serif; font-size: 1.5rem; font-weight: 700; color: var(--primary); letter-spacing: .14em; }
+        .logo-ja { font-size: .58rem; color: var(--text-muted); letter-spacing: .06em; margin-top: 3px; }
+        .nav { display: flex; align-items: center; gap: 2px; }
+        .nav a { display: block; padding: 8px 12px; font-size: .8rem; font-weight: 500; color: var(--text); border-radius: 4px; white-space: nowrap; letter-spacing: .03em; }
+        .nav a:hover { color: var(--primary); background: var(--primary-pale); }
+        .nav .nav-cta { margin-left: 10px; background: var(--primary); color: #fff; padding: 9px 22px; border-radius: 5px; }
+        .nav .nav-cta:hover { background: var(--primary-mid); color: #fff; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; border: none; background: none; }
+        .hamburger span { display: block; width: 24px; height: 2px; background: var(--primary); border-radius: 2px; transition: var(--ease); }
+        .mobile-nav { display: none; background: #fff; border-top: 1px solid var(--gray-100); padding: 8px 24px 20px; }
+        .mobile-nav.open { display: block; }
+        .mobile-nav a { display: block; padding: 13px 0; color: var(--text); font-size: .92rem; border-bottom: 1px solid var(--gray-100); }
+        .mobile-nav a:last-child { border-bottom: none; }
+
+        /* ── HERO ────────────────────────────────────── */
+        #hero {
+            padding-top: 68px;
+            min-height: 100vh;
+            display: flex; align-items: center;
+            position: relative; overflow: hidden;
+
+            /* 重ね合わせ：① 写真置き換え可能な背景色ベース ② グラデーションオーバーレイ */
+            background-color: var(--primary-dark);
+            background-image:
+                /* ─── ① 左から右へのテキスト保護オーバーレイ ─── */
+                linear-gradient(
+                    105deg,
+                    rgba(0,22,34,.96) 0%,
+                    rgba(0,30,46,.90) 35%,
+                    rgba(0,40,58,.65) 60%,
+                    rgba(0,60,80,.25) 100%
+                ),
+                /* ─── ② 縦方向グラデーション（写真っぽい深み） ─── */
+                linear-gradient(
+                    to bottom,
+                    rgba(0,10,20,.5) 0%,
+                    rgba(0,0,0,0) 40%,
+                    rgba(0,0,0,.3) 100%
+                ),
+                /* ─── ③ ベースカラー（写真がない場合のフォールバック） ─── */
+                linear-gradient(
+                    140deg,
+                    #001a28 0%,
+                    #003d58 40%,
+                    #005060 70%,
+                    #006d7a 100%
+                );
+        }
+
+        /* ★ 実際の写真に差し替える場合は↓のクラスで background-image を上書き
+           例: .hero-photo { background-image: url('hero.jpg'); }
+           のような記述を別の <style> タグか外部CSSに追加してください */
+        .hero-photo-layer {
+            position: absolute; inset: 0;
+            background-size: cover; background-position: center 30%;
+            background-image: none; /* ← ここに url('写真パス') を入れてください */
+            mix-blend-mode: overlay;
+            opacity: .5;
+        }
+
+        /* 建物シルエット（SVGアート）*/
+        .hero-city {
+            position: absolute; bottom: 0; right: 0; left: 0;
+            height: 55%; pointer-events: none; opacity: .12;
+        }
+        /* 右側の大きな幾何学装飾 */
+        .hero-ring {
+            position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+            width: min(500px, 45vw); aspect-ratio: 1;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.1);
+            background: radial-gradient(circle at 40% 40%, rgba(0,120,160,.2), transparent 70%);
+            pointer-events: none;
+        }
+        .hero-ring::before {
+            content: ''; position: absolute; inset: 36px;
+            border-radius: 50%; border: 1px solid rgba(255,255,255,.07);
+        }
+        .hero-ring::after {
+            content: ''; position: absolute; inset: 80px;
+            border-radius: 50%; border: 1px solid rgba(255,255,255,.05);
+            background: rgba(0,100,140,.1);
+        }
+
+        /* テキストのライン装飾 */
+        .hero-line {
+            display: block; width: 48px; height: 2px;
+            background: var(--accent-light); margin-bottom: 24px;
+        }
+
+        .hero-content { position: relative; z-index: 2; max-width: 640px; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
+            font-size: .76rem; padding: 6px 16px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,.18); letter-spacing: .1em;
+            margin-bottom: 30px;
+        }
+        .hero-badge::before {
+            content: ''; display: block; width: 6px; height: 6px;
+            border-radius: 50%; background: var(--accent-light);
+        }
+        .hero-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: clamp(2.6rem, 6vw, 4.2rem);
+            font-weight: 700; color: #fff;
+            line-height: 1.32; margin-bottom: 28px; letter-spacing: .02em;
+        }
+        .hero-title em { font-style: normal; color: #8ed4e4; }
+        .hero-title .small { font-size: .65em; display: block; font-weight: 300; letter-spacing: .06em; color: rgba(255,255,255,.75); margin-bottom: 6px; }
+        .hero-desc { color: rgba(255,255,255,.75); font-size: .97rem; line-height: 2; margin-bottom: 48px; }
+        .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+        .hero-scroll {
+            position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            color: rgba(255,255,255,.4); font-size: .68rem; letter-spacing: .12em;
+            z-index: 2;
+        }
+        .hero-scroll-line {
+            width: 1px; height: 40px;
+            background: linear-gradient(to bottom, rgba(255,255,255,.4), transparent);
+            animation: scrollLine 1.8s ease infinite;
+        }
+        @keyframes scrollLine { 0%,100%{opacity:.4;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.2)} }
+
+        /* ── STATS ───────────────────────────────────── */
+        #stats {
+            background: var(--primary);
+            padding: 0;
+        }
+        .stats-inner {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            border-left: 1px solid rgba(255,255,255,.1);
+        }
+        .stat-item {
+            padding: 44px 32px;
+            border-right: 1px solid rgba(255,255,255,.1);
+            text-align: center;
+        }
+        .stat-num {
+            font-family: 'Noto Serif JP', serif;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            font-weight: 700; color: #fff; line-height: 1;
+            margin-bottom: 10px; letter-spacing: .02em;
+        }
+        .stat-num span { font-size: .55em; font-weight: 300; margin-left: 3px; }
+        .stat-label { font-size: .78rem; color: rgba(255,255,255,.65); letter-spacing: .06em; }
+
+        /* ── SERVICES ─────────────────────────────────── */
+        .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .service-card {
+            background: #fff; border-radius: var(--radius);
+            overflow: hidden; box-shadow: var(--shadow);
+            transition: var(--ease);
+        }
+        .service-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+        .service-img {
+            height: 188px; position: relative; overflow: hidden;
+            display: flex; align-items: flex-end;
+        }
+        /* サービスカード画像（テーマ別グラデーション） */
+        .service-img-1 {
+            background:
+                linear-gradient(to top, rgba(0,30,46,.85) 0%, rgba(0,30,46,.3) 60%, transparent 100%),
+                linear-gradient(135deg, #003d58 0%, #005060 50%, #007080 100%);
+        }
+        .service-img-2 {
+            background:
+                linear-gradient(to top, rgba(0,20,40,.9) 0%, rgba(0,20,40,.3) 60%, transparent 100%),
+                linear-gradient(135deg, #002030 0%, #003d58 50%, #005070 100%);
+        }
+        .service-img-3 {
+            background:
+                linear-gradient(to top, rgba(10,20,10,.9) 0%, rgba(10,20,10,.3) 60%, transparent 100%),
+                linear-gradient(135deg, #1a3030 0%, #004040 50%, #006058 100%);
+        }
+        /* ★ 実際の写真がある場合: .service-img-1 { background-image: url('img/service1.jpg'); background-size: cover; background-position: center; } */
+        .service-img-inner {
+            padding: 20px 24px; position: relative; z-index: 1; width: 100%;
+        }
+        .service-img-tag {
+            display: inline-block; font-size: .7rem; font-weight: 500;
+            background: rgba(255,255,255,.18); color: rgba(255,255,255,.9);
+            padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,.2);
+            margin-bottom: 8px;
+        }
+        .service-img h3 { font-size: 1.02rem; font-weight: 700; color: #fff; line-height: 1.5; }
+        .service-icon-large {
+            position: absolute; right: 20px; top: 20px;
+            font-size: 2.2rem; opacity: .25; line-height: 1;
+        }
+        .service-body { padding: 24px; }
+        .service-body p { font-size: .87rem; color: var(--text-muted); line-height: 1.9; }
+
+        /* ── PROCESS ──────────────────────────────────── */
+        .process-steps {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            gap: 0; position: relative;
+        }
+        .process-steps::before {
+            content: ''; position: absolute;
+            top: 44px; left: calc(10% + 20px); right: calc(10% + 20px);
+            height: 1px; background: var(--gray-200); z-index: 0;
+        }
+        .process-step { text-align: center; position: relative; z-index: 1; padding: 0 12px; }
+        .step-num {
+            width: 88px; height: 88px; border-radius: 50%;
+            background: #fff; border: 2px solid var(--gray-200);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin: 0 auto 20px; box-shadow: var(--shadow);
+            transition: var(--ease);
+        }
+        .process-step:hover .step-num { border-color: var(--primary); background: var(--primary); color: #fff; transform: scale(1.08); box-shadow: var(--shadow-lg); }
+        .step-num .n { font-family: 'Noto Serif JP', serif; font-size: 1.3rem; font-weight: 700; color: var(--primary); line-height: 1; }
+        .step-num .icon { font-size: 1.4rem; line-height: 1; }
+        .process-step:hover .step-num .n,
+        .process-step:hover .step-num .icon { color: #fff; filter: brightness(10); }
+        .step-title { font-size: .88rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+        .step-desc { font-size: .78rem; color: var(--text-muted); line-height: 1.7; }
+
+        /* ── CEO ──────────────────────────────────────── */
+        .ceo-wrap { display: grid; grid-template-columns: 320px 1fr; gap: 72px; align-items: start; }
+
+        .ceo-card {
+            background: #fff; border-radius: var(--radius);
+            overflow: hidden; box-shadow: var(--shadow-lg);
+            position: sticky; top: 90px;
+        }
+        .ceo-photo-area {
+            height: 260px; position: relative;
+            /* ── 代表者写真エリア ── */
+            /* ★ 写真がある場合: background-image: url('img/ceo.jpg'); background-size: cover; background-position: top center; */
+            background:
+                linear-gradient(to bottom, rgba(0,30,46,.2) 0%, rgba(0,30,46,.7) 100%),
+                linear-gradient(140deg, #002a3a 0%, #004558 50%, #005d6e 100%);
+            display: flex; align-items: flex-end;
+        }
+        .ceo-photo-text {
+            padding: 20px 24px; color: #fff;
+        }
+        .ceo-photo-name { font-family: 'Noto Serif JP', serif; font-size: 1.4rem; font-weight: 700; line-height: 1.3; }
+        .ceo-photo-role { font-size: .78rem; color: rgba(255,255,255,.7); margin-top: 4px; letter-spacing: .08em; }
+        .ceo-photo-initial {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%);
+            font-family: 'Noto Serif JP', serif; font-size: 5rem; font-weight: 700;
+            color: rgba(255,255,255,.12); pointer-events: none; user-select: none;
+        }
+
+        .ceo-links-area { padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+        .ceo-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 15px; border-radius: 7px;
+            background: var(--gray-50); color: var(--primary);
+            font-size: .82rem; font-weight: 500; transition: var(--ease);
+            border: 1px solid var(--gray-200);
+        }
+        .ceo-link:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .ceo-link svg { flex-shrink: 0; }
+        .ceo-link-label { flex: 1; }
+        .ceo-link-arrow { margin-left: auto; opacity: .5; font-size: .75rem; }
+
+        .ceo-quote {
+            font-family: 'Noto Serif JP', serif;
+            font-size: clamp(1.25rem, 2.5vw, 1.55rem);
+            font-weight: 700; color: var(--primary); line-height: 1.65;
+            margin-bottom: 32px; padding: 28px 28px 28px 32px;
+            border-left: 4px solid var(--accent);
+            background: var(--gray-50); border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        .ceo-text { font-size: .94rem; color: var(--text); line-height: 2.1; margin-bottom: 18px; }
+        .ceo-sign { text-align: right; font-family: 'Noto Serif JP', serif; font-size: .92rem; color: var(--text-muted); margin-top: 36px; }
+
+        /* ── IMAGE BREAK ──────────────────────────────── */
+        /* 写真を想起させるフルブリードセクション */
+        #imgbreak {
+            min-height: 360px;
+            display: flex; align-items: center;
+            position: relative; overflow: hidden;
+            background-color: var(--primary-dark);
+            background-image:
+                linear-gradient(to right, rgba(0,22,34,.94) 30%, rgba(0,22,34,.55) 65%, rgba(0,22,34,.2) 100%),
+                linear-gradient(160deg, #001820 0%, #003050 45%, #006070 100%);
+            /* ★ 実際の写真に差し替え: background-image: linear-gradient(...), url('img/office.jpg');
+               background-size: auto, cover; background-position: center, center right; */
+        }
+        .imgbreak-city {
+            position: absolute; bottom: 0; right: -40px; left: 0;
+            height: 70%; pointer-events: none; opacity: .08;
+        }
+        .imgbreak-inner { position: relative; z-index: 2; max-width: 580px; }
+        .imgbreak-tag {
+            display: inline-block; font-size: .74rem; letter-spacing: .14em;
+            color: var(--accent-light); text-transform: uppercase; margin-bottom: 18px; font-weight: 500;
+        }
+        .imgbreak-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: clamp(1.5rem, 3vw, 2.1rem);
+            font-weight: 700; color: #fff; line-height: 1.55; margin-bottom: 24px;
+        }
+        .imgbreak-desc { color: rgba(255,255,255,.72); font-size: .93rem; line-height: 1.95; margin-bottom: 32px; }
+
+        /* ── CASES ────────────────────────────────────── */
+        .cases-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .case-card { background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: var(--ease); }
+        .case-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .case-head {
+            height: 120px; position: relative; overflow: hidden;
+            display: flex; align-items: flex-end; padding: 18px 22px;
+        }
+        .case-head-1 { background: linear-gradient(135deg, #003d58 0%, #005060 60%, #007070 100%); }
+        .case-head-2 { background: linear-gradient(135deg, #28200a 0%, #5a3a10 60%, #7a5020 100%); }
+        .case-head-3 { background: linear-gradient(135deg, #0a2820 0%, #1a4832 60%, #2a5840 100%); }
+        .case-head-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 3rem; opacity: .2; }
+        .case-tag { display: inline-block; font-size: .7rem; background: rgba(255,255,255,.2); color: rgba(255,255,255,.9); padding: 3px 10px; border-radius: 12px; margin-bottom: 8px; }
+        .case-head h3 { font-size: .94rem; font-weight: 700; color: #fff; line-height: 1.5; position: relative; z-index: 1; }
+        .case-body { padding: 22px; }
+        .case-rows { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+        .case-row { display: flex; gap: 10px; font-size: .85rem; }
+        .case-label { color: var(--text-muted); min-width: 62px; flex-shrink: 0; }
+        .case-val { color: var(--text); font-weight: 500; }
+        .case-result { background: var(--primary-pale); border-radius: 7px; padding: 12px 14px; font-size: .83rem; color: var(--primary); font-weight: 500; line-height: 1.65; }
+        .cases-note { text-align: center; margin-top: 22px; font-size: .78rem; color: var(--text-muted); }
+
+        /* ── NEWS ─────────────────────────────────────── */
+        .news-list { display: flex; flex-direction: column; }
+        .news-item { display: flex; align-items: baseline; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--gray-200); transition: padding-left .2s; }
+        .news-item:first-child { border-top: 1px solid var(--gray-200); }
+        .news-item:hover { padding-left: 6px; }
+        .news-date { font-size: .8rem; color: var(--text-muted); white-space: nowrap; min-width: 88px; }
+        .news-cat { font-size: .7rem; padding: 3px 10px; border-radius: 12px; white-space: nowrap; font-weight: 500; background: var(--primary); color: #fff; }
+        .news-cat.info { background: var(--accent); }
+        .news-cat.press { background: #3a7854; }
+        .news-link { font-size: .92rem; color: var(--text); flex: 1; }
+        .news-link:hover { color: var(--primary); }
+
+        /* ── COMPANY TABLE ────────────────────────────── */
+        .co-table { width: 100%; border-collapse: collapse; font-size: .93rem; }
+        .co-table tr { border-bottom: 1px solid var(--gray-200); }
+        .co-table tr:first-child { border-top: 1px solid var(--gray-200); }
+        .co-table th { width: 200px; padding: 20px 24px; text-align: left; font-weight: 600; color: var(--primary); background: var(--primary-pale); vertical-align: top; }
+        .co-table td { padding: 20px 24px; color: var(--text); line-height: 1.75; }
+
+        /* ── CONTACT ──────────────────────────────────── */
+        #contact {
+            position: relative; overflow: hidden;
+            background-color: var(--primary-dark);
+            background-image:
+                linear-gradient(to bottom, rgba(0,15,25,.6) 0%, rgba(0,15,25,0) 40%),
+                linear-gradient(160deg, #001820 0%, #003050 50%, #004560 100%);
+        }
+        .contact-city {
+            position: absolute; bottom: 0; right: 0; left: 0;
+            height: 50%; pointer-events: none; opacity: .06;
+        }
+        .contact-inner { position: relative; z-index: 2; }
+        .contact-lead { text-align: center; color: rgba(255,255,255,.72); font-size: .94rem; margin-bottom: 48px; line-height: 2; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .fg { display: flex; flex-direction: column; gap: 8px; }
+        .fg.full { grid-column: 1 / -1; }
+        .fg label { font-size: .83rem; font-weight: 500; color: rgba(255,255,255,.85); }
+        .fg label .req { font-size: .68rem; background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 3px; margin-left: 7px; vertical-align: middle; }
+        .fg input, .fg select, .fg textarea {
+            background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.2);
+            border-radius: 7px; padding: 12px 16px; color: #fff;
+            font-size: .93rem; font-family: inherit; transition: var(--ease); outline: none; width: 100%;
+        }
+        .fg input::placeholder, .fg textarea::placeholder { color: rgba(255,255,255,.35); }
+        .fg select option { background: var(--primary-dark); }
+        .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.14); }
+        .fg textarea { resize: vertical; min-height: 156px; }
+        .form-foot { text-align: center; margin-top: 36px; }
+        .form-note { font-size: .76rem; color: rgba(255,255,255,.45); margin-top: 14px; }
+        .form-done { display: none; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22); border-radius: var(--radius); padding: 48px; text-align: center; }
+        .form-done.show { display: block; }
+        .form-done h3 { font-size: 1.2rem; color: #fff; margin-bottom: 12px; }
+        .form-done p { color: rgba(255,255,255,.72); }
+
+        /* ── FOOTER ───────────────────────────────────── */
+        footer { background: #001018; color: rgba(255,255,255,.6); padding: 64px 0 28px; }
+        .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 56px; margin-bottom: 52px; }
+        .footer-brand .logo-en { font-family: 'Noto Serif JP', serif; font-size: 1.4rem; font-weight: 700; color: #fff; letter-spacing: .14em; display: block; margin-bottom: 4px; }
+        .footer-brand .logo-ja { font-size: .58rem; color: rgba(255,255,255,.35); display: block; margin-bottom: 18px; }
+        .footer-brand p { font-size: .83rem; line-height: 1.9; }
+        .footer-nav h4, .footer-contact h4 { font-size: .72rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.07); }
+        .footer-nav ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .footer-nav ul a { font-size: .83rem; color: rgba(255,255,255,.55); }
+        .footer-nav ul a:hover { color: #fff; }
+        .footer-contact p { font-size: .83rem; line-height: 1.9; margin-bottom: 20px; }
+        .footer-contact .btn-ghost-white { font-size: .8rem; padding: 9px 20px; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,.06); padding-top: 24px; text-align: center; font-size: .74rem; color: rgba(255,255,255,.3); }
+
+        /* ── BACK TO TOP ──────────────────────────────── */
+        #btt {
+            position: fixed; bottom: 28px; right: 28px; z-index: 999;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            border: none; cursor: pointer; box-shadow: var(--shadow-lg);
+            opacity: 0; pointer-events: none; transition: var(--ease);
+        }
+        #btt.show { opacity: 1; pointer-events: all; }
+        #btt:hover { background: var(--primary-mid); transform: translateY(-3px); }
+
+        /* ── RESPONSIVE ───────────────────────────────── */
+        @media (max-width: 1024px) {
+            .stats-inner { grid-template-columns: repeat(2, 1fr); }
+            .process-steps { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+            .process-steps::before { display: none; }
+        }
+        @media (max-width: 960px) {
+            .service-grid { grid-template-columns: repeat(2, 1fr); }
+            .ceo-wrap { grid-template-columns: 1fr; gap: 40px; }
+            .ceo-card { position: static; max-width: 420px; margin: 0 auto; }
+            .cases-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-grid { grid-template-columns: 1fr; gap: 36px; }
+        }
+        @media (max-width: 640px) {
+            .section { padding: 72px 0; }
+            .nav { display: none; }
+            .hamburger { display: flex; }
+            .hero-title { font-size: 2.4rem; }
+            .service-grid, .cases-grid { grid-template-columns: 1fr; }
+            .process-steps { grid-template-columns: 1fr 1fr; gap: 28px; }
+            .stats-inner { grid-template-columns: 1fr 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .fg.full { grid-column: auto; }
+            .news-item { flex-wrap: wrap; gap: 6px; }
+            .co-table { display: block; }
+            .co-table tr { display: block; }
+            .co-table th, .co-table td { display: block; width: 100%; padding: 12px 16px; }
+            .co-table th { padding-bottom: 4px; }
+            .co-table td { padding-top: 4px; }
+            #btt { bottom: 18px; right: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header id="header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="#" class="logo">
+                <span class="logo-en">LEG</span>
+                <span class="logo-ja">株式会社LEG</span>
+            </a>
+            <nav class="nav">
+                <a href="#services">事業内容</a>
+                <a href="#process">M&Aの流れ</a>
+                <a href="#ceo">代表メッセージ</a>
+                <a href="#cases">事例</a>
+                <a href="#news">お知らせ</a>
+                <a href="#company">会社概要</a>
+                <a href="#contact" class="nav-cta">お問い合わせ</a>
+            </nav>
+            <button class="hamburger" id="hamburger" aria-label="メニュー">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+    <nav class="mobile-nav" id="mobileNav">
+        <a href="#services"  onclick="closeMobileNav()">事業内容</a>
+        <a href="#process"   onclick="closeMobileNav()">M&Aの流れ</a>
+        <a href="#ceo"       onclick="closeMobileNav()">代表メッセージ</a>
+        <a href="#cases"     onclick="closeMobileNav()">事例</a>
+        <a href="#news"      onclick="closeMobileNav()">お知らせ</a>
+        <a href="#company"   onclick="closeMobileNav()">会社概要</a>
+        <a href="#contact"   onclick="closeMobileNav()">お問い合わせ</a>
+    </nav>
+</header>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+    <!-- 写真置換レイヤー（写真を使う場合はCSSで background-image を指定） -->
+    <div class="hero-photo-layer" aria-hidden="true"></div>
+
+    <!-- 都市・ビルシルエット（SVGアート）-->
+    <svg class="hero-city" viewBox="0 0 1440 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-hidden="true">
+        <!-- 遠景ビル群 -->
+        <rect x="0"   y="240" width="40"  height="160" fill="white"/>
+        <rect x="45"  y="200" width="60"  height="200" fill="white"/>
+        <rect x="50"  y="170" width="10"  height="30"  fill="white"/>
+        <rect x="110" y="220" width="50"  height="180" fill="white"/>
+        <rect x="165" y="180" width="70"  height="220" fill="white"/>
+        <rect x="170" y="150" width="12"  height="30"  fill="white"/>
+        <rect x="240" y="210" width="40"  height="190" fill="white"/>
+        <rect x="285" y="160" width="80"  height="240" fill="white"/>
+        <rect x="370" y="230" width="30"  height="170" fill="white"/>
+        <rect x="405" y="170" width="55"  height="230" fill="white"/>
+        <rect x="408" y="140" width="8"   height="30"  fill="white"/>
+        <rect x="465" y="200" width="65"  height="200" fill="white"/>
+        <rect x="535" y="150" width="90"  height="250" fill="white"/>
+        <rect x="540" y="120" width="14"  height="30"  fill="white"/>
+        <rect x="630" y="220" width="45"  height="180" fill="white"/>
+        <rect x="680" y="175" width="70"  height="225" fill="white"/>
+        <rect x="755" y="205" width="50"  height="195" fill="white"/>
+        <rect x="810" y="155" width="85"  height="245" fill="white"/>
+        <rect x="815" y="125" width="12"  height="30"  fill="white"/>
+        <rect x="900" y="190" width="60"  height="210" fill="white"/>
+        <rect x="965" y="165" width="75"  height="235" fill="white"/>
+        <rect x="970" y="135" width="10"  height="30"  fill="white"/>
+        <rect x="1045" y="215" width="45" height="185" fill="white"/>
+        <rect x="1095" y="170" width="80" height="230" fill="white"/>
+        <rect x="1100" y="140" width="12" height="30"  fill="white"/>
+        <rect x="1180" y="200" width="55" height="200" fill="white"/>
+        <rect x="1240" y="155" width="90" height="245" fill="white"/>
+        <rect x="1335" y="220" width="50" height="180" fill="white"/>
+        <rect x="1390" y="175" width="50" height="225" fill="white"/>
+        <!-- 窓のライト -->
+        <rect x="55"  y="195" width="6" height="5" fill="rgba(255,220,100,.6)"/>
+        <rect x="68"  y="210" width="6" height="5" fill="rgba(255,220,100,.4)"/>
+        <rect x="175" y="185" width="8" height="6" fill="rgba(255,220,100,.5)"/>
+        <rect x="540" y="165" width="9" height="7" fill="rgba(255,220,100,.6)"/>
+        <rect x="560" y="180" width="7" height="6" fill="rgba(255,220,100,.4)"/>
+        <rect x="820" y="175" width="8" height="6" fill="rgba(255,220,100,.5)"/>
+        <rect x="970" y="160" width="8" height="6" fill="rgba(255,220,100,.6)"/>
+        <rect x="1100" y="155" width="9" height="7" fill="rgba(255,220,100,.5)"/>
+    </svg>
+
+    <div class="hero-ring" aria-hidden="true"></div>
+
+    <div class="container">
+        <div class="hero-content">
+            <span class="hero-badge">M&amp;A仲介・事業承継支援</span>
+            <h1 class="hero-title">
+                <span class="small">Leading Edge Growth</span>
+                会社の未来を、<br>
+                <em>共に</em>描く。
+            </h1>
+            <p class="hero-desc">
+                事業承継・M&Aは、経営者にとって人生の大きな決断です。<br>
+                株式会社LEGは、オーナー様の想いに寄り添いながら、<br>
+                最善のゴールへと丁寧にご支援します。
+            </p>
+            <div class="hero-btns">
+                <a href="#contact" class="btn btn-white">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    無料相談はこちら
+                </a>
+                <a href="#cases" class="btn btn-ghost-white">成約事例を見る →</a>
+            </div>
+        </div>
+    </div>
+    <div class="hero-scroll" aria-hidden="true">
+        <span>SCROLL</span>
+        <div class="hero-scroll-line"></div>
+    </div>
+</section>
+
+<!-- ══ STATS ══ -->
+<section id="stats">
+    <div class="container">
+        <div class="stats-inner">
+            <div class="stat-item">
+                <div class="stat-num">50<span>件以上</span></div>
+                <div class="stat-label">累計成約実績</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">97<span>%</span></div>
+                <div class="stat-label">顧客満足度</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">8<span>ヶ月</span></div>
+                <div class="stat-label">平均成約期間</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">0<span>円</span></div>
+                <div class="stat-label">初回相談料</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ SERVICES ══ -->
+<section id="services" class="section">
+    <div class="container">
+        <p class="section-sub">Services</p>
+        <h2 class="section-title">事業内容</h2>
+        <div class="section-bar"></div>
+        <div class="service-grid">
+            <div class="service-card">
+                <div class="service-img service-img-1">
+                    <span class="service-icon-large" aria-hidden="true">🤝</span>
+                    <div class="service-img-inner">
+                        <span class="service-img-tag">M&amp;A Brokerage</span>
+                        <h3>M&amp;A仲介</h3>
+                    </div>
+                </div>
+                <div class="service-body">
+                    <p>売り手・買い手双方の利益を最大化する中立的な立場で、秘密保持を徹底しながら条件交渉から最終契約まで一貫してサポート。最適なマッチングを実現します。</p>
+                </div>
+            </div>
+            <div class="service-card">
+                <div class="service-img service-img-2">
+                    <span class="service-icon-large" aria-hidden="true">🏢</span>
+                    <div class="service-img-inner">
+                        <span class="service-img-tag">Business Succession</span>
+                        <h3>事業承継支援</h3>
+                    </div>
+                </div>
+                <div class="service-body">
+                    <p>後継者不在・親族内承継・従業員承継など多様なケースに対応。経営者の想いを次世代へ確実につなぐ承継プランを設計し、実行まで伴走します。</p>
+                </div>
+            </div>
+            <div class="service-card">
+                <div class="service-img service-img-3">
+                    <span class="service-icon-large" aria-hidden="true">📊</span>
+                    <div class="service-img-inner">
+                        <span class="service-img-tag">Consulting</span>
+                        <h3>企業価値評価・コンサルティング</h3>
+                    </div>
+                </div>
+                <div class="service-body">
+                    <p>財務・事業・法務の多角的視点から企業価値を精緻に算出。M&Aや承継に向けた準備段階から戦略立案・実行まで、専門家チームで支援します。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ PROCESS ══ -->
+<section id="process" class="section section-alt">
+    <div class="container">
+        <p class="section-sub">Process</p>
+        <h2 class="section-title">M&amp;A・事業承継の流れ</h2>
+        <div class="section-bar"></div>
+        <div class="process-steps">
+            <div class="process-step">
+                <div class="step-num">
+                    <div class="icon">💬</div>
+                </div>
+                <p class="step-title">01. 無料相談</p>
+                <p class="step-desc">ご状況をヒアリングし、最適なご支援内容をご提案。秘密は厳守します。</p>
+            </div>
+            <div class="process-step">
+                <div class="step-num">
+                    <div class="icon">📋</div>
+                </div>
+                <p class="step-title">02. 現状分析</p>
+                <p class="step-desc">財務・事業・組織の現状を把握し、企業価値を算定します。</p>
+            </div>
+            <div class="process-step">
+                <div class="step-num">
+                    <div class="icon">🔍</div>
+                </div>
+                <p class="step-title">03. 候補先選定</p>
+                <p class="step-desc">独自ネットワークを活用し、最適な候補先を探索・アプローチします。</p>
+            </div>
+            <div class="process-step">
+                <div class="step-num">
+                    <div class="icon">🤝</div>
+                </div>
+                <p class="step-title">04. 交渉・調整</p>
+                <p class="step-desc">条件交渉、デューデリジェンス、契約内容の調整を専門家がサポート。</p>
+            </div>
+            <div class="process-step">
+                <div class="step-num">
+                    <div class="icon">✅</div>
+                </div>
+                <p class="step-title">05. 成約・引継ぎ</p>
+                <p class="step-desc">最終契約の締結後も、円滑な引継ぎに向けてサポートを継続します。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ IMAGE BREAK（フルブリード帯）══ -->
+<section id="imgbreak">
+    <!-- 都市シルエット（背景アート）-->
+    <svg class="imgbreak-city" viewBox="0 0 1440 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-hidden="true">
+        <rect x="0"   y="100" width="50"  height="200" fill="white"/>
+        <rect x="55"  y="60"  width="80"  height="240" fill="white"/>
+        <rect x="60"  y="40"  width="12"  height="20"  fill="white"/>
+        <rect x="140" y="120" width="60"  height="180" fill="white"/>
+        <rect x="205" y="70"  width="90"  height="230" fill="white"/>
+        <rect x="300" y="100" width="50"  height="200" fill="white"/>
+        <rect x="355" y="50"  width="100" height="250" fill="white"/>
+        <rect x="358" y="30"  width="14"  height="20"  fill="white"/>
+        <rect x="460" y="80"  width="70"  height="220" fill="white"/>
+        <rect x="535" y="110" width="55"  height="190" fill="white"/>
+        <rect x="595" y="60"  width="95"  height="240" fill="white"/>
+        <rect x="600" y="38"  width="14"  height="22"  fill="white"/>
+        <rect x="695" y="90"  width="65"  height="210" fill="white"/>
+        <rect x="765" y="55"  width="105" height="245" fill="white"/>
+        <rect x="870" y="105" width="50"  height="195" fill="white"/>
+        <rect x="925" y="65"  width="85"  height="235" fill="white"/>
+        <rect x="1015" y="95" width="60"  height="205" fill="white"/>
+        <rect x="1080" y="50" width="100" height="250" fill="white"/>
+        <rect x="1085" y="30" width="14"  height="20"  fill="white"/>
+        <rect x="1185" y="110" width="55" height="190" fill="white"/>
+        <rect x="1245" y="70"  width="90" height="230" fill="white"/>
+        <rect x="1340" y="100" width="50" height="200" fill="white"/>
+        <rect x="1395" y="60"  width="45" height="240" fill="white"/>
+    </svg>
+    <div class="container">
+        <div class="imgbreak-inner">
+            <span class="imgbreak-tag">Why LEG</span>
+            <h2 class="imgbreak-title">
+                「まだ早い」はありません。<br>
+                準備が整う前から、相談できる。
+            </h2>
+            <p class="imgbreak-desc">
+                M&Aや事業承継は、決断してから動き始めるのでは遅いことがあります。<br>
+                株式会社LEGは、5年後・10年後を見据えた早期の戦略立案からご支援。<br>
+                今すぐ売却する予定がない方のご相談も、もちろん歓迎します。
+            </p>
+            <a href="#contact" class="btn btn-ghost-white">まずは無料相談 →</a>
+        </div>
+    </div>
+</section>
+
+<!-- ══ CEO MESSAGE ══ -->
+<section id="ceo" class="section">
+    <div class="container">
+        <p class="section-sub">Message</p>
+        <h2 class="section-title">代表メッセージ</h2>
+        <div class="section-bar"></div>
+        <div class="ceo-wrap">
+
+            <!-- 左：プロフィールカード -->
+            <div>
+                <div class="ceo-card">
+                    <div class="ceo-photo-area">
+                        <!-- ★ 代表写真: <img src="img/ceo.jpg" alt="末廣哲彦" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top"> で差し替え可 -->
+                        <span class="ceo-photo-initial" aria-hidden="true">末</span>
+                        <div class="ceo-photo-text">
+                            <p class="ceo-photo-name">末廣 哲彦</p>
+                            <p class="ceo-photo-role">代表取締役 / 株式会社LEG</p>
+                        </div>
+                    </div>
+                    <div class="ceo-links-area">
+                        <!-- ▼ 実際の記事URLに差し替えてください -->
+                        <a href="#" class="ceo-link" target="_blank" rel="noopener noreferrer">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            <span class="ceo-link-label">インタビュー記事①</span>
+                            <span class="ceo-link-arrow">→</span>
+                        </a>
+                        <a href="#" class="ceo-link" target="_blank" rel="noopener noreferrer">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            <span class="ceo-link-label">インタビュー記事②</span>
+                            <span class="ceo-link-arrow">→</span>
+                        </a>
+                        <a href="#" class="ceo-link" target="_blank" rel="noopener noreferrer">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            <span class="ceo-link-label">メディア掲載記事</span>
+                            <span class="ceo-link-arrow">→</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右：メッセージ本文 -->
+            <div class="ceo-body">
+                <blockquote class="ceo-quote">
+                    「譲る」ことは、決して終わりではなく、<br>
+                    新たな始まりです。
+                </blockquote>
+                <p class="ceo-text">
+                    事業承継・M&Aを「売却して終わり」と捉える時代は終わりました。今日では、経営者が長年かけて育ててきた会社の文化・理念・従業員の生活を守りながら、新たな成長ステージへと引き継いでいくことが求められています。
+                </p>
+                <p class="ceo-text">
+                    株式会社LEGは「Leading Edge Growth（先駆けて成長する）」の精神のもと、オーナー経営者の皆様が「この人に任せてよかった」と心から思っていただける、誠実なアドバイザリーを提供してまいります。
+                </p>
+                <p class="ceo-text">
+                    「まだ早いかな」「うちは対象になるのかな」―そんな段階から、ぜひお気軽にご相談ください。一緒に、会社の未来を考えましょう。
+                </p>
+                <p class="ceo-sign">代表取締役　末廣 哲彦</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ══ CASES ══ -->
+<section id="cases" class="section section-alt">
+    <div class="container">
+        <p class="section-sub">Cases</p>
+        <h2 class="section-title">成約事例</h2>
+        <div class="section-bar"></div>
+        <div class="cases-grid">
+
+            <div class="case-card">
+                <div class="case-head case-head-1">
+                    <span class="case-head-icon" aria-hidden="true">🏭</span>
+                    <div>
+                        <span class="case-tag">M&amp;A仲介</span>
+                        <h3>製造業における後継者不在問題の解決</h3>
+                    </div>
+                </div>
+                <div class="case-body">
+                    <div class="case-rows">
+                        <div class="case-row"><span class="case-label">業種</span><span class="case-val">金属加工業</span></div>
+                        <div class="case-row"><span class="case-label">従業員数</span><span class="case-val">約30名</span></div>
+                        <div class="case-row"><span class="case-label">売上規模</span><span class="case-val">約3億円</span></div>
+                        <div class="case-row"><span class="case-label">成約期間</span><span class="case-val">約8ヶ月</span></div>
+                    </div>
+                    <div class="case-result">✓ 地元同業者へのM&Aにより、全従業員の雇用を維持。社名・ブランドも継続</div>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-head case-head-2">
+                    <span class="case-head-icon" aria-hidden="true">🍽️</span>
+                    <div>
+                        <span class="case-tag">事業承継支援</span>
+                        <h3>飲食業の親族内承継・経営権スムーズ移転</h3>
+                    </div>
+                </div>
+                <div class="case-body">
+                    <div class="case-rows">
+                        <div class="case-row"><span class="case-label">業種</span><span class="case-val">飲食業（複数店舗）</span></div>
+                        <div class="case-row"><span class="case-label">従業員数</span><span class="case-val">約15名</span></div>
+                        <div class="case-row"><span class="case-label">売上規模</span><span class="case-val">約1.5億円</span></div>
+                        <div class="case-row"><span class="case-label">支援期間</span><span class="case-val">約12ヶ月</span></div>
+                    </div>
+                    <div class="case-result">✓ 株式移転・経営権委譲を円滑に実現。節税対策もワンストップ対応</div>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-head case-head-3">
+                    <span class="case-head-icon" aria-hidden="true">💻</span>
+                    <div>
+                        <span class="case-tag">M&amp;A仲介</span>
+                        <h3>ITサービス企業の成長戦略型M&A</h3>
+                    </div>
+                </div>
+                <div class="case-body">
+                    <div class="case-rows">
+                        <div class="case-row"><span class="case-label">業種</span><span class="case-val">ITサービス業</span></div>
+                        <div class="case-row"><span class="case-label">従業員数</span><span class="case-val">約20名</span></div>
+                        <div class="case-row"><span class="case-label">売上規模</span><span class="case-val">約2億円</span></div>
+                        <div class="case-row"><span class="case-label">成約期間</span><span class="case-val">約6ヶ月</span></div>
+                    </div>
+                    <div class="case-result">✓ 成長資本の取り込みにより、M&A後1年で売上150%増を達成</div>
+                </div>
+            </div>
+
+        </div>
+        <p class="cases-note">※ 事例はすべて実際の成約案件を一部加工・匿名化したものです。</p>
+    </div>
+</section>
+
+<!-- ══ NEWS ══ -->
+<section id="news" class="section">
+    <div class="container">
+        <p class="section-sub">News</p>
+        <h2 class="section-title">お知らせ</h2>
+        <div class="section-bar"></div>
+        <div class="news-list">
+            <div class="news-item">
+                <span class="news-date">2026.04.01</span>
+                <span class="news-cat">お知らせ</span>
+                <a href="#" class="news-link">株式会社LEG、公式ウェブサイトをリニューアルしました</a>
+            </div>
+            <div class="news-item">
+                <span class="news-date">2026.03.15</span>
+                <span class="news-cat press">メディア掲載</span>
+                <a href="#" class="news-link">代表・末廣哲彦が事業承継専門誌「継ぐ」に寄稿しました</a>
+            </div>
+            <div class="news-item">
+                <span class="news-date">2026.02.28</span>
+                <span class="news-cat info">セミナー</span>
+                <a href="#" class="news-link">「事業承継の基礎と最新動向」無料オンラインセミナー（満員御礼）</a>
+            </div>
+            <div class="news-item">
+                <span class="news-date">2026.01.10</span>
+                <span class="news-cat">お知らせ</span>
+                <a href="#" class="news-link">2026年の営業開始のご挨拶</a>
+            </div>
+            <div class="news-item">
+                <span class="news-date">2025.12.05</span>
+                <span class="news-cat press">メディア掲載</span>
+                <a href="#" class="news-link">経済誌「事業承継 最前線」に代表インタビューが掲載されました</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ COMPANY ══ -->
+<section id="company" class="section section-alt">
+    <div class="container">
+        <p class="section-sub">Company</p>
+        <h2 class="section-title">会社概要</h2>
+        <div class="section-bar"></div>
+        <table class="co-table">
+            <tr><th>会社名</th><td>株式会社LEG</td></tr>
+            <tr><th>代表取締役</th><td>末廣 哲彦</td></tr>
+            <tr><th>設立</th><td>（設立年月をご記入ください）</td></tr>
+            <tr><th>資本金</th><td>（資本金額をご記入ください）</td></tr>
+            <tr><th>所在地</th><td>（住所をご記入ください）</td></tr>
+            <tr><th>TEL / FAX</th><td>（電話番号をご記入ください）</td></tr>
+            <tr><th>事業内容</th><td>M&amp;A仲介業務<br>事業承継支援業務<br>企業価値評価・経営コンサルティング</td></tr>
+            <tr><th>取引銀行</th><td>（取引銀行をご記入ください）</td></tr>
+        </table>
+    </div>
+</section>
+
+<!-- ══ CONTACT ══ -->
+<section id="contact" class="section">
+    <!-- 都市シルエット -->
+    <svg class="contact-city" viewBox="0 0 1440 260" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-hidden="true">
+        <rect x="0"   y="80"  width="45"  height="180" fill="white"/>
+        <rect x="50"  y="40"  width="75"  height="220" fill="white"/>
+        <rect x="130" y="100" width="50"  height="160" fill="white"/>
+        <rect x="185" y="55"  width="90"  height="205" fill="white"/>
+        <rect x="280" y="75"  width="60"  height="185" fill="white"/>
+        <rect x="345" y="30"  width="100" height="230" fill="white"/>
+        <rect x="450" y="65"  width="70"  height="195" fill="white"/>
+        <rect x="525" y="90"  width="50"  height="170" fill="white"/>
+        <rect x="580" y="45"  width="95"  height="215" fill="white"/>
+        <rect x="680" y="70"  width="65"  height="190" fill="white"/>
+        <rect x="750" y="35"  width="110" height="225" fill="white"/>
+        <rect x="865" y="85"  width="55"  height="175" fill="white"/>
+        <rect x="925" y="50"  width="85"  height="210" fill="white"/>
+        <rect x="1015" y="80" width="60"  height="180" fill="white"/>
+        <rect x="1080" y="40" width="95"  height="220" fill="white"/>
+        <rect x="1180" y="95" width="50"  height="165" fill="white"/>
+        <rect x="1235" y="55" width="80"  height="205" fill="white"/>
+        <rect x="1320" y="80" width="50"  height="180" fill="white"/>
+        <rect x="1375" y="45" width="65"  height="215" fill="white"/>
+    </svg>
+    <div class="container contact-inner">
+        <p class="section-sub">Contact</p>
+        <h2 class="section-title">お問い合わせ</h2>
+        <div class="section-bar"></div>
+        <p class="contact-lead">
+            ご相談・お見積りは無料です。秘密は厳守いたします。<br>
+            「まだ早いかな」という段階からお気軽にどうぞ。
+        </p>
+
+        <form id="contactForm" onsubmit="submitForm(event)">
+            <div class="form-grid">
+                <div class="fg">
+                    <label for="name">お名前 <span class="req">必須</span></label>
+                    <input type="text" id="name" name="name" placeholder="山田 太郎" required>
+                </div>
+                <div class="fg">
+                    <label for="company">会社名</label>
+                    <input type="text" id="company" name="company" placeholder="株式会社○○">
+                </div>
+                <div class="fg">
+                    <label for="email">メールアドレス <span class="req">必須</span></label>
+                    <input type="email" id="email" name="email" placeholder="example@company.co.jp" required>
+                </div>
+                <div class="fg">
+                    <label for="phone">電話番号</label>
+                    <input type="tel" id="phone" name="phone" placeholder="03-0000-0000">
+                </div>
+                <div class="fg full">
+                    <label for="type">お問い合わせ種別 <span class="req">必須</span></label>
+                    <select id="type" name="type" required>
+                        <option value="">選択してください</option>
+                        <option value="ma">M&amp;A仲介について</option>
+                        <option value="succession">事業承継支援について</option>
+                        <option value="valuation">企業価値評価について</option>
+                        <option value="seminar">セミナー・イベントについて</option>
+                        <option value="other">その他</option>
+                    </select>
+                </div>
+                <div class="fg full">
+                    <label for="message">お問い合わせ内容 <span class="req">必須</span></label>
+                    <textarea id="message" name="message" placeholder="ご相談内容をご自由にお書きください。" required></textarea>
+                </div>
+            </div>
+            <div class="form-foot">
+                <button type="submit" class="btn btn-white">送信する →</button>
+                <p class="form-note">送信いただいた情報は、当社プライバシーポリシーに基づき適切に管理いたします。</p>
+            </div>
+        </form>
+        <div class="form-done" id="formDone">
+            <h3>お問い合わせありがとうございました</h3>
+            <p>内容を確認のうえ、担当者より2営業日以内にご連絡いたします。</p>
+        </div>
+    </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <span class="logo-en">LEG</span>
+                <span class="logo-ja">株式会社LEG</span>
+                <p>M&amp;A仲介・事業承継支援を通じて、<br>日本の中小企業の未来を支えます。</p>
+            </div>
+            <nav class="footer-nav">
+                <h4>Menu</h4>
+                <ul>
+                    <li><a href="#services">事業内容</a></li>
+                    <li><a href="#process">M&amp;Aの流れ</a></li>
+                    <li><a href="#ceo">代表メッセージ</a></li>
+                    <li><a href="#cases">成約事例</a></li>
+                    <li><a href="#news">お知らせ</a></li>
+                    <li><a href="#company">会社概要</a></li>
+                    <li><a href="#contact">お問い合わせ</a></li>
+                </ul>
+            </nav>
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <p>ご相談・お問い合わせは<br>いつでもお気軽にどうぞ。<br>初回相談は無料です。</p>
+                <a href="#contact" class="btn btn-ghost-white">お問い合わせ →</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 株式会社LEG. All Rights Reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Back to Top -->
+<button id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="トップへ戻る">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18,15 12,9 6,15"/></svg>
+</button>
+
+<script>
+    // Header scroll
+    const header = document.getElementById('header');
+    const btt = document.getElementById('btt');
+    window.addEventListener('scroll', () => {
+        header.classList.toggle('scrolled', window.scrollY > 40);
+        btt.classList.toggle('show', window.scrollY > 360);
+    }, { passive: true });
+
+    // Mobile menu
+    document.getElementById('hamburger').addEventListener('click', () => {
+        document.getElementById('mobileNav').classList.toggle('open');
+    });
+    function closeMobileNav() {
+        document.getElementById('mobileNav').classList.remove('open');
+    }
+
+    // Form
+    function submitForm(e) {
+        e.preventDefault();
+        document.getElementById('contactForm').style.display = 'none';
+        document.getElementById('formDone').classList.add('show');
+        document.getElementById('contact').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Scroll-in animation
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                io.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll(
+        '.service-card, .case-card, .news-item, .process-step, .stat-item, .ceo-wrap, .imgbreak-inner'
+    ).forEach((el, i) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(24px)';
+        el.style.transition = `opacity .65s ease ${i * 0.07}s, transform .65s ease ${i * 0.07}s`;
+        io.observe(el);
+    });
+
+    // Stats counter animation
+    const statNums = document.querySelectorAll('.stat-num');
+    const statObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            const text = el.textContent;
+            const match = text.match(/(\d+)/);
+            if (!match) return;
+            const target = parseInt(match[1], 10);
+            const suffix = el.innerHTML.replace(match[0], '');
+            let current = 0;
+            const step = Math.ceil(target / 40);
+            const timer = setInterval(() => {
+                current = Math.min(current + step, target);
+                el.innerHTML = current + suffix;
+                if (current >= target) clearInterval(timer);
+            }, 40);
+            statObserver.unobserve(el);
+        });
+    }, { threshold: 0.5 });
+    statNums.forEach(el => statObserver.observe(el));
+</script>
+</body>
+</html>

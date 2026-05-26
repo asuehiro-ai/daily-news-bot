@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>事業承継 簡易診断レポート | LEG</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== A4 印刷設定 ===== */
+@page {
+  size: A4;
+  margin: 12mm 15mm;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* ===== カラー変数 ===== */
+:root {
+  --navy:        #002e3a;
+  --primary:     #005060;
+  --mid:         #006d86;
+  --pale:        #eef3f5;
+  --gold:        #c07228;
+  --gold-light:  #e8a85a;
+  --gold-bg:     #fff8e1;
+  --white:       #fff;
+  --gray50:      #f5f8fa;
+  --gray100:     #dde6eb;
+  --text:        #1a2533;
+  --muted:       #6b7c93;
+  --green-bg:    #e8f5e9;
+  --green-text:  #1b5e20;
+  --orange-bg:   #fff3e0;
+  --orange-text: #7c3a00;
+  --red:         #c62828;
+  --r:           6px;
+}
+
+body {
+  font-family: 'Noto Sans JP', 'Hiragino Sans', Meiryo, sans-serif;
+  background: var(--gray50);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ページ区切り用 */
+.page-break { page-break-before: always; break-before: page; height: 0; display: block; }
+.print-only { display: none; }
+
+/* ===== 上部ヘッダー（画面表示のみ） ===== */
+.top-bar {
+  background: var(--navy);
+  color: #fff;
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.top-bar .logo  { font-size: 1.4rem; font-weight: 700; color: var(--gold); letter-spacing: .05em; }
+.top-bar .sub   { font-size: .75rem; color: #aaccdd; }
+.top-bar .title { font-size: 1rem; font-weight: 500; margin-left: auto; }
+
+/* ===== アップロードエリア ===== */
+.upload-wrap { max-width: 860px; margin: 40px auto; padding: 0 20px; }
+.upload-box {
+  border: 2.5px dashed var(--mid);
+  border-radius: var(--r);
+  padding: 48px 32px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--white);
+  transition: background .2s, border-color .2s;
+}
+.upload-box:hover, .upload-box.drag { background: var(--pale); border-color: var(--gold); }
+.upload-box .icon { font-size: 2.8rem; margin-bottom: 12px; }
+.upload-box h2   { font-size: 1.1rem; color: var(--primary); margin-bottom: 6px; }
+.upload-box p    { font-size: .82rem; color: var(--muted); }
+.upload-box input { display: none; }
+
+/* ===== 回答一覧 ===== */
+.res-list { max-width: 860px; margin: 0 auto 32px; padding: 0 20px; }
+.res-card {
+  background: var(--white);
+  border-radius: var(--r);
+  border-left: 4px solid var(--primary);
+  margin-bottom: 10px;
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: box-shadow .15s;
+}
+.res-card:hover  { box-shadow: 0 4px 16px rgba(0,50,70,.12); }
+.res-card .name  { font-weight: 700; font-size: 1rem; }
+.res-card .meta  { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+.res-card .btn   {
+  background: var(--primary); color: #fff; border: none;
+  padding: 7px 18px; border-radius: 6px; cursor: pointer; font-size: .82rem;
+}
+.res-card .btn:hover { background: var(--mid); }
+
+/* ===== レポートラッパー ===== */
+#report { display: none; }
+.report-page { max-width: 900px; margin: 0 auto 40px; padding: 0 20px; }
+
+/* ===== タイトルブロック ===== */
+.rpt-title {
+  background: var(--navy);
+  color: #fff;
+  overflow: hidden;
+}
+.rpt-title-stripe {
+  height: 6px;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+}
+.rpt-title-content {
+  padding: 20px 32px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+.rpt-title-left .co   { font-size: 1.5rem; font-weight: 700; letter-spacing: .02em; }
+.rpt-title-left .pres { font-size: .92rem; margin-top: 4px; color: #aaccdd; }
+.rpt-title-left .date { font-size: .74rem; color: #7aabbc; margin-top: 10px; line-height: 1.7; }
+.rpt-title-right {
+  text-align: right;
+  font-size: .72rem;
+  color: var(--gold-light);
+  line-height: 1.9;
+  white-space: nowrap;
+}
+
+/* ===== 状況チップ行 ===== */
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 32px;
+  background: var(--pale);
+  border-bottom: 2px solid var(--gray100);
+}
+.chk { padding: 5px 14px; border-radius: 20px; font-size: .76rem; font-weight: 600; white-space: nowrap; }
+.chk.ok   { background: var(--green-bg);  color: var(--green-text); }
+.chk.ng   { background: #ffebee;          color: var(--red); }
+.chk.warn { background: var(--orange-bg); color: var(--orange-text); }
+
+/* ===== レポート本文 ===== */
+.rpt-body {
+  background: #fff;
+  padding: 28px 32px;
+  border: 1px solid var(--gray100);
+  border-top: none;
+}
+
+/* セクション */
+.sect { margin-bottom: 26px; }
+.sect:last-child { margin-bottom: 0; }
+.sect-title {
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--primary);
+  border-left: 4px solid var(--gold);
+  padding: 2px 0 2px 10px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+/* ===== KPIグリッド ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.kpi-card {
+  background: var(--pale);
+  border-radius: var(--r);
+  border-top: 3px solid var(--primary);
+  padding: 12px 14px;
+}
+.kpi-card.gold { border-top-color: var(--gold); background: var(--gold-bg); }
+.kpi-card .kpi-label { font-size: .66rem; color: var(--muted); font-weight: 600; letter-spacing: .04em; margin-bottom: 5px; }
+.kpi-card .kpi-val   { font-size: .96rem; font-weight: 700; color: var(--navy); }
+.kpi-card.gold .kpi-val { color: var(--gold); }
+.kpi-sub { font-size: .72rem; color: var(--muted); margin-top: 5px; }
+
+/* ===== テーブル ===== */
+table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+th, td { padding: 7px 10px; border: 1px solid var(--gray100); text-align: left; vertical-align: middle; }
+thead th { background: var(--navy); color: #fff; font-weight: 600; font-size: .73rem; }
+tbody tr:nth-child(even) td { background: var(--gray50); }
+.td-label  { background: var(--primary)   !important; color: #fff !important; font-weight: 600; font-size: .74rem; }
+.td-gold   { background: var(--gold-bg)   !important; color: var(--gold) !important; font-weight: 700; }
+.td-rank1  { background: var(--gold-bg)   !important; color: var(--gold) !important; font-weight: 700; }
+.td-green  { background: var(--green-bg)  !important; color: var(--green-text)  !important; font-size: .76rem; line-height: 1.5; }
+.td-orange { background: var(--orange-bg) !important; color: var(--orange-text) !important; font-size: .76rem; line-height: 1.5; }
+
+/* ランキングバッジ */
+.badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  font-weight: 700; font-size: .74rem;
+}
+.b1 { background: var(--gold);    color: #fff; }
+.b2 { background: #90a4ae;        color: #fff; }
+.b3 { background: #bcaaa4;        color: #fff; }
+.b4 { background: var(--gray100); color: var(--muted); }
+.b5 { background: var(--gray100); color: var(--muted); }
+
+/* 推奨ボックス */
+.rec-box {
+  background: var(--pale);
+  border-left: 4px solid var(--gold);
+  border-radius: 0 var(--r) var(--r) 0;
+  padding: 16px 22px;
+}
+.rec-box h3 { font-size: .83rem; color: var(--primary); margin-bottom: 10px; font-weight: 700; }
+.rec-body   { font-size: .82rem; color: var(--text); line-height: 1.85; }
+.rec-top {
+  background: var(--navy);
+  color: var(--gold-light);
+  padding: 11px 18px;
+  border-radius: var(--r);
+  margin-top: 12px;
+  font-weight: 700;
+  font-size: .88rem;
+}
+
+/* 注釈 */
+.note { font-size: .68rem; color: var(--muted); margin-top: 6px; line-height: 1.65; }
+
+/* ===== 印刷ボタン ===== */
+.print-bar { text-align: center; padding: 20px 0 40px; }
+.btn-print {
+  background: var(--gold); color: #fff; border: none; padding: 13px 40px;
+  border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(192,114,40,.35);
+}
+.btn-print:hover { background: #a85f20; }
+.btn-back {
+  background: none; border: 2px solid var(--muted); color: var(--muted);
+  padding: 11px 28px; border-radius: 8px; font-size: .9rem; cursor: pointer;
+  margin-right: 16px;
+}
+.btn-back:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ===== 印刷メディアクエリ ===== */
+@media print {
+  /* UI非表示 */
+  .top-bar, .upload-wrap, .res-list, .print-bar { display: none !important; }
+  #report { display: block !important; }
+
+  /* 印刷専用要素 */
+  .print-only { display: block !important; }
+
+  body { background: #fff; }
+  .report-page { max-width: 100%; padding: 0; margin: 0; }
+  .rpt-body { padding: 14px 22px; border: none; }
+
+  /* フォントサイズ（印刷用） */
+  table        { font-size: 7.5pt; }
+  th, td       { padding: 4px 7px; }
+  .sect-title  { font-size: 6.5pt; margin-bottom: 6px; }
+  .kpi-grid    { gap: 6px; margin-bottom: 5px; }
+  .kpi-card    { padding: 7px 10px; }
+  .kpi-card .kpi-val   { font-size: 8pt; }
+  .kpi-card .kpi-label { font-size: 5.5pt; }
+  .kpi-sub     { font-size: 6pt; }
+  .rec-body    { font-size: 7.5pt; line-height: 1.7; }
+  .rec-box h3  { font-size: 7.5pt; margin-bottom: 6px; }
+  .rec-top     { font-size: 7.5pt; padding: 7px 12px; margin-top: 8px; }
+  .note        { font-size: 5.5pt; }
+  .badge       { width: 18px; height: 18px; font-size: 6.5pt; }
+  .chk         { font-size: 6.5pt; padding: 3px 10px; }
+  .status-row  { padding: 10px 22px; gap: 8px; }
+
+  /* セクション区切り */
+  .sect { page-break-inside: avoid; margin-bottom: 16px; }
+  .page-break { page-break-before: always; break-before: page; }
+}
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="top-bar">
+  <div>
+    <div class="logo">LEG</div>
+    <div class="sub">M&A仲介・事業承継支援</div>
+  </div>
+  <div class="title">事業承継 簡易診断システム</div>
+</div>
+
+<!-- CSV アップロード -->
+<div class="upload-wrap" id="uploadWrap">
+  <div class="upload-box" id="dropZone" onclick="document.getElementById('csvInput').click()">
+    <div class="icon">📂</div>
+    <h2>Googleフォームの回答CSVをドロップ または クリックして選択</h2>
+    <p>Googleスプレッドシートから「ファイル → ダウンロード → CSV形式」でエクスポートしたファイルをご使用ください</p>
+    <input type="file" id="csvInput" accept=".csv">
+  </div>
+</div>
+
+<!-- 回答一覧 -->
+<div class="res-list" id="resList" style="display:none"></div>
+
+<!-- レポート本体 -->
+<div id="report">
+  <div class="report-page" id="reportPage"></div>
+  <div class="print-bar">
+    <button class="btn-back" onclick="backToList()">← 一覧に戻る</button>
+    <button class="btn-print" onclick="window.print()">🖨 PDFで印刷 / 保存</button>
+  </div>
+</div>
+
+<script>
+// ── CSV 読み込み ────────────────────────────────────────────
+const dropZone = document.getElementById('dropZone');
+const csvInput = document.getElementById('csvInput');
+let allRows = [];
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  if (e.dataTransfer.files[0]) readCSV(e.dataTransfer.files[0]);
+});
+csvInput.addEventListener('change', e => { if (e.target.files[0]) readCSV(e.target.files[0]); });
+
+function readCSV(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const bytes = new Uint8Array(e.target.result);
+    let text;
+    // UTF-8 BOM (EF BB BF) を優先、次に UTF-8 strict、失敗なら Shift-JIS
+    if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+      text = new TextDecoder('utf-8').decode(bytes.slice(3));
+    } else {
+      try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      } catch {
+        try { text = new TextDecoder('shift-jis').decode(bytes); }
+        catch { text = new TextDecoder('utf-8').decode(bytes); }
+      }
+    }
+    allRows = parseCSV(text);
+    showList();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = parseLine(lines[0]);
+  return lines.slice(1).map(l => {
+    const vals = parseLine(l);
+    const obj = {};
+    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+    return obj;
+  });
+}
+
+function parseLine(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === ',' && !inQ) { result.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── 一覧表示 ──────────────────────────────────────────────
+function showList() {
+  document.getElementById('uploadWrap').style.display = 'none';
+  document.getElementById('report').style.display     = 'none';
+  const el = document.getElementById('resList');
+  el.style.display = 'block';
+  el.innerHTML = `<div style="padding:8px 0 18px;font-size:.82rem;color:var(--muted)">${allRows.length}件の回答が見つかりました</div>`;
+  allRows.forEach((row, i) => {
+    const vals = Object.values(row);
+    const co  = fld(row, '会社名', '商号', '法人名', '社名') || vals[2] || '（会社名なし）';
+    const pre = fld(row, '社長名', '代表者名', '氏名', 'ご氏名', 'お名前', '代表') || vals[3] || '（社長名なし）';
+    const ts  = fld(row, 'タイムスタンプ') || '';
+    const card = document.createElement('div');
+    card.className = 'res-card';
+    card.innerHTML = `
+      <div>
+        <div class="name">${co}</div>
+        <div class="meta">${pre} 様 ／ ${ts}</div>
+      </div>
+      <button class="btn">診断レポートを生成</button>`;
+    card.querySelector('button').onclick = () => showReport(i);
+    el.appendChild(card);
+  });
+  const addBtn = document.createElement('div');
+  addBtn.style = 'text-align:center;padding:20px 0';
+  addBtn.innerHTML = `<button class="btn-back" onclick="document.getElementById('uploadWrap').style.display='block';document.getElementById('resList').style.display='none'">別のCSVを読み込む</button>`;
+  el.appendChild(addBtn);
+}
+
+function backToList() {
+  document.getElementById('report').style.display  = 'none';
+  document.getElementById('resList').style.display = 'block';
+}
+
+// ── 診断計算 ──────────────────────────────────────────────
+// Yes/No 回答の正規化：「保証あり」「あり」「している」→ true
+function isYes(str) {
+  if (!str || str.toString().trim() === '') return false;
+  const s = str.toString();
+  if (s.includes('していない') || s.includes('いない') || s.includes('なし')
+      || s.includes('いいえ')  || s.includes('ない'))  return false;
+  return s.includes('している') || s.includes('あり')  || s.includes('いる')
+      || s.includes('ある')     || s.includes('はい')  || s.includes('供し');
+}
+
+function fld(row, ...kws) {
+  for (const kw of kws)
+    for (const [k, v] of Object.entries(row))
+      if (k.includes(kw)) return v || '';
+  return '';
+}
+
+function num(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = parseFloat(v.toString().replace(/,|、|円/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+function jpy(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  return `${Math.round(n).toLocaleString()}円`;
+}
+
+function giftTax(v) {
+  const t = Math.max(0, v - 1_100_000);
+  if (t <= 0)           return 0;
+  if (t <= 2_000_000)   return Math.round(t * .10);
+  if (t <= 3_000_000)   return Math.round(t * .15 - 100_000);
+  if (t <= 4_000_000)   return Math.round(t * .20 - 250_000);
+  if (t <= 6_000_000)   return Math.round(t * .30 - 650_000);
+  if (t <= 10_000_000)  return Math.round(t * .40 - 1_250_000);
+  if (t <= 15_000_000)  return Math.round(t * .45 - 1_750_000);
+  if (t <= 30_000_000)  return Math.round(t * .50 - 2_500_000);
+  return Math.round(t * .55 - 4_000_000);
+}
+
+function deemedDivTax(d) {
+  if (d <= 0)            return 0;
+  if (d <= 1_950_000)    return Math.round(d * .15);
+  if (d <= 3_300_000)    return Math.round(d * .20 - 97_500);
+  if (d <= 6_950_000)    return Math.round(d * .30 - 427_500);
+  if (d <= 9_000_000)    return Math.round(d * .33 - 636_000);
+  if (d <= 18_000_000)   return Math.round(d * .43 - 1_536_000);
+  if (d <= 40_000_000)   return Math.round(d * .50 - 2_796_000);
+  return Math.round(d * .55 - 4_796_000);
+}
+
+function calcDiag(row) {
+  const netAssets = num(fld(row, '純資産'))   || 0;
+  const debt      = num(fld(row, '借入金'))   || 0;
+  const revenue   = num(fld(row, '売上高'))   || 0;
+  const opProfit  = num(fld(row, '営業利益')) || 0;
+
+  const capital   = Math.min(10_000_000, Math.max(1_000_000, netAssets * 0.05));
+  const stockVal  = netAssets;
+
+  // M&A 評価（純資産×3倍）
+  const maEV     = netAssets * 3;
+  const maLabel  = '純資産×3倍';
+  const maEquity = Math.max(maEV - debt, netAssets);
+  const maMultiple = '3倍';
+
+  const liquidVal  = Math.round(netAssets * 0.9);
+  const gt         = giftTax(stockVal);
+
+  const mboGain    = Math.max(0, stockVal - capital);
+  const mboTax     = Math.round(mboGain * 0.20315);
+  const mboTH      = stockVal - mboTax;
+
+  const maGain     = Math.max(0, maEquity - capital);
+  const maTax      = Math.round(maGain * 0.20315);
+  const maTH       = maEquity - maTax;
+
+  const dd         = Math.max(0, liquidVal - capital);
+  const closTax    = deemedDivTax(dd);
+  const closTH     = Math.max(0, liquidVal - closTax);
+
+  const maName = `M&A（${maMultiple}）`;
+
+  const ranking = [
+    { name: maName,              takehome: maTH,  comment: '創業者利益最大化・税率一定（20.315%）・経営者保証解除期待' },
+    { name: '社内承継（MBO）',   takehome: mboTH, comment: '購入資金調達が最大ハードル・社内候補の力量次第' },
+    { name: '廃業（清算）',      takehome: closTH,comment: '従業員雇用喪失・他方法が実現不可な場合のみ検討' },
+    { name: '親族内（税制適用）',takehome: 0,     comment: '2027年期限の特例措置・後継者の贈与税は猶予・免除' },
+    { name: '親族内（税制なし）',takehome: 0,     comment: '評価は経営状況により変動するため早期準備が鍵' },
+  ].sort((a, b) => b.takehome - a.takehome);
+
+  return { netAssets, debt, revenue, opProfit, capital, stockVal,
+           maEquity, maLabel, maMultiple, maName, liquidVal,
+           giftTax: gt, mboTax, mboTH, maTax, maTH, closTax, closTH, ranking };
+}
+
+// ── レポート HTML 生成 ─────────────────────────────────────
+function showReport(idx) {
+  const row  = allRows[idx];
+  const diag = calcDiag(row);
+
+  const rowVals = Object.values(row);
+  const co    = fld(row, '会社名', '商号', '法人名', '社名') || rowVals[2] || '—';
+  const pre   = fld(row, '社長名', '代表者名', '氏名', 'ご氏名', 'お名前', '代表') || rowVals[3] || '—';
+  const ind   = fld(row, '業種')                        || '—';
+  const age   = fld(row, '年齢')                        || '—';
+  const emp   = fld(row, '従業員')                      || '—';
+  const pri   = fld(row, '優先', '重視')                || '';
+  const pref  = fld(row, '選択肢', '考えている')         || '';
+
+  const hasF  = isYes(fld(row, '親族'));
+  const hasI  = isYes(fld(row, '社内'));
+  const hasG  = isYes(fld(row, '経営者保証'));
+  const hasC  = isYes(fld(row, '担保', '不動産'));
+
+  const today = new Date();
+  const ds    = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+
+  const badgeClass = ['b1','b2','b3','b4','b5'];
+
+  // ── 推奨コメント生成 ─────────────────────────────────────
+  const ageNum = parseInt(age) || 0;
+  const recLines = [];
+
+  // ① 年齢・承継時期の緊急度
+  if (ageNum > 0) {
+    recLines.push('<strong>【年齢・承継時期について】</strong>');
+    if (ageNum < 55) {
+      recLines.push(`現在${ageNum}歳で、承継準備に比較的余裕がある段階です。ただし、事業承継税制（特例）の2027年3月末期限を踏まえると、親族内承継をお考えの場合は早めのご検討をお勧めします。`);
+    } else if (ageNum < 65) {
+      recLines.push(`現在${ageNum}歳で、本格的な検討・準備を始める時期です。5年以内の承継完了を視野に、候補者や方向性の絞り込みを早期に進めることをお勧めします。`);
+    } else if (ageNum < 70) {
+      recLines.push(`現在${ageNum}歳で、具体的な実行フェーズに入る時期です。3〜5年以内の完了を目標に、専門家を交えた準備を早急に進めることをお勧めします。`);
+    } else {
+      recLines.push(`現在${ageNum}歳で、早期の具体的な行動が求められる段階です。M&Aであれば通常1年前後での実現が可能なため、迅速な意思決定が重要です。`);
+    }
+    recLines.push('');
+  }
+
+  // ② 後継者候補の状況
+  recLines.push('<strong>【後継者候補の状況について】</strong>');
+  if (hasF && hasI) {
+    recLines.push('親族・社内の両方に候補者がいらっしゃいます。それぞれの意向・準備状況を確認した上で、早期に承継方法の方向性を絞り込むことが重要です。');
+  } else if (hasF) {
+    recLines.push('親族内での承継を基軸に検討を進めることが考えられます。候補者との意思確認と、2027年3月末を期限とする事業承継税制（特例措置）の活用も合わせてご検討ください。');
+  } else if (hasI) {
+    recLines.push('社内承継（MBO）が選択肢として挙げられます。候補者の経営意欲・能力・資金調達力の確認が次のステップとなります。M&Aも並行して検討できます。');
+  } else {
+    recLines.push('現時点では内部での後継者候補が不在のため、M&Aによる第三者への事業承継が有力な選択肢となります。後継者不在の場合でも事業価値を最大化できる可能性がありますので、早めの情報収集・準備をお勧めします。');
+  }
+
+  // ③ 経営者保証・担保の状況
+  recLines.push('');
+  recLines.push('<strong>【経営者保証・担保の状況について】</strong>');
+  if (hasG && hasC) {
+    recLines.push('経営者保証・個人担保ともに設定されています。承継の際にはこれらの解除交渉が必要となる可能性があり、金融機関との事前協議が不可欠です。M&Aにより保証・担保が解除されるケースも多く、有効な解決策となり得ます。');
+  } else if (hasG) {
+    recLines.push('経営者保証が設定されています。M&Aや社内承継の過程で解除交渉が期待できます。「経営者保証に関するガイドライン」に基づく金融機関への早期相談をお勧めします。');
+  } else if (hasC) {
+    recLines.push('個人不動産が担保設定されています。承継に際して担保の取り扱いについて、金融機関と事前に協議しておくことが重要です。');
+  } else {
+    recLines.push('経営者保証・個人担保なし。金融面では承継手続きを進めやすい条件が整っています。');
+  }
+
+  // ④ 優先事項との整合
+  const priItems = [];
+  if (pri.includes('従業員') || pri.includes('雇用'))
+    priItems.push('従業員の雇用継続を重視される場合、親族内・社内承継が比較的リスクの低い選択肢です。M&Aでも雇用継続を条件とした相手先選びが一般的に行われています。');
+  if (pri.includes('利益') || pri.includes('最大') || pri.includes('手取り'))
+    priItems.push('手取りの最大化を重視される場合、M&Aが最も高い可能性を持ちます。市場環境・財務内容・タイミングによって実現できる価格は変動します。');
+  if (pri.includes('早期') || pri.includes('速やか'))
+    priItems.push('早期実現を重視される場合、M&A（通常1年前後）が最も現実的な選択肢です。準備を早めることで交渉の幅が広がります。');
+  if (pri.includes('理念') || pri.includes('継続') || pri.includes('文化'))
+    priItems.push('経営理念・企業文化の継続を重視される場合、親族内または社内承継が馴染みやすい選択肢です。');
+  if (pri.includes('地域') || pri.includes('社会'))
+    priItems.push('地域貢献・社会性を重視される場合、地域企業へのM&Aや社内承継が適合的です。');
+  if (priItems.length) {
+    recLines.push('');
+    recLines.push('<strong>【ご重視されている点との整合について】</strong>');
+    priItems.forEach(l => recLines.push(l));
+  }
+
+  const lines = recLines.join('<br>');
+
+  let topChoice = diag.ranking[0].name;
+  if (!hasF && topChoice.includes('親族'))
+    topChoice = diag.ranking.find(o => !o.name.includes('親族'))?.name || 'M&A';
+  if (!hasI && topChoice.includes('MBO'))
+    topChoice = diag.ranking.find(o => !o.name.includes('MBO') && !o.name.includes('親族'))?.name || 'M&A';
+
+  document.getElementById('reportPage').innerHTML = `
+
+<!-- ▌ タイトルブロック -->
+<div class="rpt-title">
+  <div class="rpt-title-stripe"></div>
+  <div class="rpt-title-content">
+    <div class="rpt-title-left">
+      <div class="co">${co}</div>
+      <div class="pres">${pre} 様</div>
+      <div class="date">業種：${ind}　／　社長年齢：${age}歳　／　従業員数：${emp}名</div>
+    </div>
+    <div class="rpt-title-right">
+      事業承継 簡易診断レポート<br>
+      株式会社 LEG<br>
+      ${ds}
+    </div>
+  </div>
+</div>
+
+<!-- ▌ 状況チップ -->
+<div class="status-row">
+  <span class="chk ${hasF?'ok':'ng'}">親族後継者：${hasF?'✅ あり':'❌ なし'}</span>
+  <span class="chk ${hasI?'ok':'warn'}">社内後継者：${hasI?'✅ あり':'△ 未確認'}</span>
+  <span class="chk ${hasG?'warn':'ok'}">経営者保証：${hasG?'⚠️ あり（要解除）':'✅ なし'}</span>
+  <span class="chk ${hasC?'warn':'ok'}">不動産担保：${hasC?'⚠️ あり':'✅ なし'}</span>
+</div>
+
+<div class="rpt-body">
+
+  <!-- ▌ 財務サマリー KPI -->
+  <div class="sect">
+    <div class="sect-title">財務サマリー（直近期）</div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">純資産（株式評価）</div>
+        <div class="kpi-val">${jpy(diag.netAssets)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">借入金残高</div>
+        <div class="kpi-val">${jpy(diag.debt)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">売上高 / 営業利益</div>
+        <div class="kpi-val">${jpy(diag.revenue)}</div>
+      </div>
+      <div class="kpi-card gold">
+        <div class="kpi-label">M&A 想定価値（${diag.maLabel}）</div>
+        <div class="kpi-val">${jpy(diag.maEquity)}</div>
+      </div>
+    </div>
+    <p class="kpi-sub">営業利益：${jpy(diag.opProfit)}</p>
+  </div>
+
+  <!-- ▌ 社長の手取り比較 -->
+  <div class="sect">
+    <div class="sect-title">社長の手取り比較</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:18%">承継方法</th>
+          <th style="width:16%">株式評価額</th>
+          <th style="width:14%">社長の税額</th>
+          <th style="width:17%">社長の手取り</th>
+          <th style="width:14%">税負担者</th>
+          <th>承継時期目安</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-label">親族内（税制なし）</td>
+          <td>${jpy(diag.stockVal)}</td><td>—</td>
+          <td>—（後継者負担）</td><td>後継者が贈与税</td><td>5年以内</td>
+        </tr>
+        <tr>
+          <td class="td-label">親族内（税制適用）</td>
+          <td>${jpy(diag.stockVal)}</td><td>猶予・免除</td>
+          <td>—（後継者負担）</td><td>後継者が贈与税（猶予）</td><td>5年以内 ※2027年期限</td>
+        </tr>
+        <tr>
+          <td class="td-label">社内承継（MBO）</td>
+          <td>${jpy(diag.stockVal)}</td><td>${jpy(diag.mboTax)}</td>
+          <td>${jpy(diag.mboTH)}</td><td>社長</td><td>3〜5年</td>
+        </tr>
+        <tr>
+          <td class="td-label">${diag.maName}</td>
+          <td>${jpy(diag.maEquity)}</td><td>${jpy(diag.maTax)}</td>
+          <td class="td-gold">${jpy(diag.maTH)}</td><td>社長</td><td>1年前後</td>
+        </tr>
+        <tr>
+          <td class="td-label">廃業（清算）</td>
+          <td>${jpy(diag.liquidVal)}</td><td>${jpy(diag.closTax)}</td>
+          <td>${jpy(diag.closTH)}</td><td>社長</td><td>1〜3年</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">※社長100%保有と仮定した概算です。実際の税額は税理士にご相談ください。</p>
+  </div>
+
+  <!-- ▌ 後継者別 負担内訳 -->
+  <div class="sect">
+    <div class="sect-title">後継者別 負担内訳</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:18%">承継方法</th>
+          <th style="width:16%">後継者側</th>
+          <th style="width:20%">負担内容</th>
+          <th style="width:16%">金額</th>
+          <th>購入資金調達</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-label">親族内（税制なし）</td><td>後継者（子等）</td><td>贈与税</td><td>${jpy(diag.giftTax)}</td><td>不要</td></tr>
+        <tr><td class="td-label">親族内（税制適用）</td><td>後継者（子等）</td><td>贈与税（猶予・免除）</td><td>猶予・免除</td><td>不要</td></tr>
+        <tr><td class="td-label">社内承継（MBO）</td><td>社内候補者</td><td>株式購入代金</td><td>${jpy(diag.stockVal)}</td><td>要（10年返済目安）</td></tr>
+        <tr><td class="td-label">${diag.maName}</td><td>買収企業</td><td>株式譲渡代金全額</td><td>${jpy(diag.maEquity)}</td><td>不要（買収側が調達）</td></tr>
+        <tr><td class="td-label">廃業（清算）</td><td>社長等株主</td><td>みなし配当税（総合課税）</td><td>${jpy(diag.closTax)}</td><td>不要</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ▌ ページ2 ここから -->
+  <div class="page-break"></div>
+  <div class="print-only" style="margin-bottom:14px;padding:7px 14px;background:#002e3a;color:#e8a85a;font-size:7pt;font-weight:700;border-radius:4px;">
+    ${co} ／ ${pre} 様　事業承継 簡易診断レポート（2ページ目）　${ds}
+  </div>
+
+  <!-- ▌ 社長手取りランキング -->
+  <div class="sect">
+    <div class="sect-title">社長手取りランキング</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:5%;text-align:center">順位</th>
+          <th style="width:22%">承継方法</th>
+          <th style="width:18%">社長手取り</th>
+          <th>特徴・コメント</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${diag.ranking.map((opt, i) => `
+        <tr>
+          <td style="text-align:center"><span class="badge ${badgeClass[i]}">${i+1}</span></td>
+          <td ${i===0?'class="td-rank1"':''}>${opt.name}</td>
+          <td ${i===0?'class="td-rank1"':''}>${opt.takehome > 0 ? jpy(opt.takehome) : '—（後継者負担）'}</td>
+          <td style="font-size:.77rem">${opt.comment}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ▌ メリット・デメリット -->
+  <div class="sect">
+    <div class="sect-title">主なメリット・デメリット</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:13%">承継方法</th>
+          <th>メリット</th>
+          <th>デメリット</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-label">親族内承継</td>
+          <td class="td-green">会社継続・家族内経営<br>従業員・取引先の安心感<br>事業承継税制で後継者の税負担を大幅軽減可（2027年期限）</td>
+          <td class="td-orange">税制なしの場合は贈与税負担が重い<br>後継者の資質・意欲・能力が鍵<br>説得・準備期間が必要</td>
+        </tr>
+        <tr>
+          <td class="td-label">社内承継（MBO）</td>
+          <td class="td-green">経営理念・文化の継続<br>従業員主体の安定的経営<br>社内への安心感</td>
+          <td class="td-orange">株式購入資金の調達が最大ハードル<br>社長の手取りが他手法より少ない<br>候補者の経営能力の見極めが必要</td>
+        </tr>
+        <tr>
+          <td class="td-label">M&A（第三者承継）</td>
+          <td class="td-green">社長の創業者利益を最大化<br>経営者保証・担保の解除期待<br>シナジーによる事業成長<br>税率が一定（20.315%）で計算しやすい</td>
+          <td class="td-orange">経営継続・従業員離反リスク<br>相手先選定・交渉に1年前後<br>情報漏洩リスクへの配慮が必要</td>
+        </tr>
+        <tr>
+          <td class="td-label">廃業（清算）</td>
+          <td class="td-green">手続きが比較的シンプル<br>（過大債務がない場合）</td>
+          <td class="td-orange">従業員の雇用が失われる<br>取引先・地域への影響が大きい<br>社長の手取りが最も少ない<br>事業価値がゼロになる</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ▌ 初回ディスカッション 推奨ポイント -->
+  <div class="sect">
+    <div class="sect-title">初回ディスカッション 推奨ポイント</div>
+    <div class="rec-box">
+      <h3>状況分析・推奨コメント</h3>
+      <div class="rec-body">${lines}</div>
+      <div class="rec-top">推奨承継方法：${topChoice}</div>
+    </div>
+    <p class="note" style="margin-top:10px">
+      ※本試算は概算（社長100%保有と仮定）です。株式評価・税額は経営状況により大きく変動します。<br>
+      　実際の税額・手続きは必ず税理士・M&Aアドバイザーにご相談ください。
+    </p>
+  </div>
+
+</div><!-- /rpt-body -->
+`;
+
+  document.getElementById('resList').style.display = 'none';
+  document.getElementById('report').style.display  = 'block';
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

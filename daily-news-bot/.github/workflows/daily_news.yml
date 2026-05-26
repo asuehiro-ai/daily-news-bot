@@ -1,0 +1,28 @@
+name: 毎朝ニュース自動投稿
+
+on:
+  schedule:
+    - cron: '0 21 * * *'  # 毎朝6:00 JST (= 21:00 UTC)
+  workflow_dispatch:       # GitHubのActionsタブから手動実行も可能
+
+jobs:
+  post-news:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリのチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 のセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 依存パッケージのインストール
+        run: pip install -r requirements.txt
+
+      - name: ニュース収集・Slack投稿
+        run: python daily_news.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
