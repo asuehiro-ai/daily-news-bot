@@ -27,19 +27,14 @@ RSS_FEEDS = {
         BASE + "%E5%9B%BD%E5%86%85%E6%94%BF%E6%B2%BB+%E5%9B%BD%E4%BC%9A",        # 国内政治 国会
         "https://www3.nhk.or.jp/rss/news/cat6.xml",
     ],
-    "国際政治": [
-        "https://www3.nhk.or.jp/rss/news/cat5.xml",                               # NHK国際ニュース（最優先・安定）
-        BASE + "%E5%9B%BD%E9%9A%9B%E6%94%BF%E6%B2%BB+%E5%A4%96%E4%BA%A4",        # 国際政治 外交（補完）
-    ],
     "M&A": [
+        BASE + "%E8%B3%87%E6%9C%AC%E6%8F%90%E6%90%BA+%E8%B3%87%E6%9C%AC%E6%A5%AD%E5%8B%99%E6%8F%90%E6%90%BA", # 資本提携 資本業務提携
         BASE + "M%26A+%E4%BC%81%E6%A5%AD%E8%B2%B7%E5%8F%8E+%E5%90%88%E4%BD%B5",  # M&A 企業買収 合併
-        BASE + "%E6%8F%90%E6%90%BA+%E5%87%BA%E8%B3%87+%E8%B2%B7%E5%8F%8E",       # 提携 出資 買収
         BASE + "%E8%B2%B7%E5%8F%8E+%E5%A3%B2%E5%8D%B4+%E4%BA%8B%E6%A5%AD%E8%AD%B2%E6%B8%A1", # 買収 売却 事業譲渡
-        # ※NHK cat4 は「経済」で使用済みのため used_titles で除外される → 使わない
     ],
 }
 
-EXCLUDE_SPORTS = {"国際政治"}
+EXCLUDE_SPORTS = set()
 CUTOFF_HOURS = {"M&A": 72}
 DEFAULT_CUTOFF_HOURS = 48
 
