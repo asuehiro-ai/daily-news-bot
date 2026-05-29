@@ -9,7 +9,7 @@ import datetime
 import os
 import re
 
-# Google News RSS（キーワード検索型・安定稼働）
+# Google News RSS（キーワード検索型）
 BASE = "https://news.google.com/rss/search?hl=ja&gl=JP&ceid=JP:ja&q="
 RSS_FEEDS = {
     "経済": [
@@ -34,7 +34,6 @@ RSS_FEEDS = {
     ],
 }
 
-EXCLUDE_SPORTS = set()
 CUTOFF_HOURS = {"M&A": 72}
 DEFAULT_CUTOFF_HOURS = 48
 
@@ -44,20 +43,32 @@ def clean(text):
 
 
 def fetch_news(feeds, max_items=8, used_titles=None, cutoff_hours=DEFAULT_CUTOFF_HOURS, category=""):
-    """RSSフィードからニュースを取得（重複除外）"""
+    """RSSフィードからニュースを取得。(items, diag) のタプルを返す。"""
     if used_titles is None:
         used_titles = set()
     cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=cutoff_hours)
     items = []
+    feed_lines = []   # フィードごとの取得結果（診断用）
+    error_lines = []  # エラー詳細（診断用）
+
     for url in feeds:
-        short = url.split("?")[0][-50:]  # ログ用に短縮
+        label = url.split("?")[0][-55:]
         try:
             feed = feedparser.parse(url, request_headers={"User-Agent": "Mozilla/5.0"})
-            total   = len(feed.entries)
-            n_pass  = 0  # 日付OK
-            n_new   = 0  # 重複なし（新規）
+
+            # feedparser がエラーページを返した場合
+            status = getattr(feed, "status", None)
+            if status and status >= 400:
+                msg = f"HTTP {status}"
+                error_lines.append(f"  ❌ {label} → {msg}")
+                print(f"  [{category}] NG {label} → {msg}")
+                continue
+
+            total  = len(feed.entries)
+            n_pass = 0
+            n_new  = 0
             for entry in feed.entries:
-                title = clean(entry.get("title", ""))
+                title   = clean(entry.get("title", ""))
                 summary = clean(entry.get("summary", entry.get("description", "")))[:300]
 
                 published = entry.get("published_parsed")
@@ -74,13 +85,30 @@ def fetch_news(feeds, max_items=8, used_titles=None, cutoff_hours=DEFAULT_CUTOFF
                 if len(items) >= max_items:
                     break
 
-            print(f"  [{category}] {short} → 取得:{total}件 / 日付OK:{n_pass}件 / 新規追加:{n_new}件")
+            line = f"  {'✅' if n_new > 0 else '⚠️'} {label} → 取得:{total} / 日付OK:{n_pass} / 新規:{n_new}"
+            feed_lines.append(line)
+            print(f"  [{category}] {line.strip()}")
+
+            # 日付フィルタで全滅した場合は原因をエラー扱いで記録
+            if total > 0 and n_pass == 0:
+                error_lines.append(f"  ⚠️ {label} → 記事はあるが全て{cutoff_hours}時間超（日付フィルタで除外）")
+
         except Exception as e:
-            print(f"  [{category}] NG {short} → エラー: {e}")
+            msg = str(e)
+            error_lines.append(f"  ❌ {label} → 例外: {msg}")
+            print(f"  [{category}] NG {label} → 例外: {msg}")
+
         if len(items) >= max_items:
             break
+
+    diag = {
+        "category": category,
+        "total":    len(items),
+        "feeds":    feed_lines,
+        "errors":   error_lines,
+    }
     print(f"  [{category}] 合計 {len(items)}件 収集")
-    return items
+    return items, diag
 
 
 def summarize(client, category, news_items):
@@ -88,19 +116,17 @@ def summarize(client, category, news_items):
         return "本日のニュースを取得できませんでした。"
 
     news_text = "\n".join(news_items)
-    if category in EXCLUDE_SPORTS:
-        exclude_note = "スポーツ関連のニュースは除外してください。"
-    elif category == "M&A":
-        exclude_note = "M&A・企業買収・合併・事業譲渡・提携・出資に関するニュースを優先して選んでください。該当するニュースがない場合は「本日はM&A関連の目立った報道はありませんでした。」と1行で返してください。"
+    if category == "M&A":
+        extra = "M&A・企業買収・合併・事業譲渡・資本提携・出資に関するニュースを優先して選んでください。該当するニュースがない場合は「本日はM&A関連の目立った報道はありませんでした。」と1行で返してください。"
     else:
-        exclude_note = ""
+        extra = ""
 
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=800,
         messages=[{
             "role": "user",
-            "content": f"""以下の「{category}」ニュースから重要な3件を選び、日本語で簡潔にまとめてください。{exclude_note}
+            "content": f"""以下の「{category}」ニュースから重要な3件を選び、日本語で簡潔にまとめてください。{extra}
 
 形式（この形式を厳守）：
 1. [タイトル]
@@ -124,6 +150,28 @@ def summarize(client, category, news_items):
     return response.content[0].text.strip()
 
 
+def build_diag_report(all_diag, date_str):
+    """診断レポート文字列を生成する。問題がなければ None を返す。"""
+    problem_cats = [d for d in all_diag if d["total"] == 0 or d["errors"]]
+    if not problem_cats:
+        return None
+
+    lines = [
+        "",
+        "━━━━━━━━━━━━━━━━",
+        f"【取得診断レポート】{date_str}",
+        "━━━━━━━━━━━━━━━━",
+    ]
+    for d in all_diag:
+        icon = "✅" if d["total"] > 0 and not d["errors"] else "❌"
+        lines.append(f"{icon} {d['category']}：{d['total']}件取得")
+        for fl in d["feeds"]:
+            lines.append(fl)
+        for el in d["errors"]:
+            lines.append(el)
+    return "\n".join(lines)
+
+
 def post_to_slack(webhook_url, text):
     data = json.dumps({"text": text}).encode("utf-8")
     req = urllib.request.Request(
@@ -135,25 +183,24 @@ def post_to_slack(webhook_url, text):
 
 
 def main():
-    api_key = os.environ["ANTHROPIC_API_KEY"]
+    api_key     = os.environ["ANTHROPIC_API_KEY"]
     webhook_url = os.environ["SLACK_WEBHOOK_URL"]
 
-    client = anthropic.Anthropic(api_key=api_key)
-
-    jst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+    client   = anthropic.Anthropic(api_key=api_key)
+    jst      = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     date_str = jst.strftime("%Y年%m月%d日")
 
     print(f"{date_str} のニュース収集開始...")
 
-    parts = [f"おはようございます。本日（{date_str}）の主要ニュースです。"]
-
-    # カテゴリーをまたいで重複タイトルを管理
+    parts     = [f"おはようございます。本日（{date_str}）の主要ニュースです。"]
+    all_diag  = []
     used_titles = set()
 
     for category, feeds in RSS_FEEDS.items():
         print(f"{category} 取得・要約中...")
         hours = CUTOFF_HOURS.get(category, DEFAULT_CUTOFF_HOURS)
-        news_items = fetch_news(feeds, used_titles=used_titles, cutoff_hours=hours, category=category)
+        news_items, diag = fetch_news(feeds, used_titles=used_titles, cutoff_hours=hours, category=category)
+        all_diag.append(diag)
         summary = summarize(client, category, news_items)
 
         parts.append("")
@@ -162,8 +209,13 @@ def main():
         parts.append("━━━━━━━━━━━━━━━━")
         parts.append(summary)
 
+    # 問題があったカテゴリがあれば診断レポートを末尾に追加
+    report = build_diag_report(all_diag, date_str)
+    if report:
+        parts.append(report)
+
     message = "\n".join(parts)
-    result = post_to_slack(webhook_url, message)
+    result  = post_to_slack(webhook_url, message)
     print(f"Slack投稿完了: {result}")
 
 
