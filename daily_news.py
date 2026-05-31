@@ -6,70 +6,130 @@ import anthropic
 import urllib.request
 import json
 import datetime
+import sys
 import os
 import re
 
-# Google News RSS（キーワード検索型・安定稼働）
-BASE = "https://news.google.com/rss/search?hl=ja&gl=JP&ceid=JP:ja&q="
+# ── RSS ソース定義 ────────────────────────────────────────────
+GNEWS = "https://news.google.com/rss/search?hl=ja&gl=JP&ceid=JP:ja&q="
+YAHOO = "https://news.yahoo.co.jp/rss/topics/"
+
 RSS_FEEDS = {
     "経済": [
-        BASE + "%E6%97%A5%E6%9C%AC%E7%B5%8C%E6%B8%88+%E6%99%AF%E6%B0%97",        # 日本経済 景気
-        "https://www3.nhk.or.jp/rss/news/cat4.xml",
+        GNEWS + "%E6%97%A5%E6%9C%AC%E7%B5%8C%E6%B8%88+%E6%99%AF%E6%B0%97",   # 日本経済 景気
+        "https://www3.nhk.or.jp/rss/news/cat4.xml",                           # NHK経済
+        YAHOO + "business.xml",                                                # Yahoo!ビジネス
     ],
     "ビジネス": [
-        BASE + "%E4%BC%81%E6%A5%AD%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9+%E6%97%A5%E6%9C%AC",  # 企業ニュース 日本
-        "https://www3.nhk.or.jp/rss/news/cat4.xml",
+        GNEWS + "%E4%BC%81%E6%A5%AD%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9+%E6%97%A5%E6%9C%AC",  # 企業ニュース 日本
+        YAHOO + "top-picks.xml",                                               # Yahoo!トップ
     ],
     "マーケット": [
-        BASE + "%E6%A0%AA%E5%BC%8F+%E7%82%BA%E6%9B%BF+%E5%B8%82%E5%A0%B4",       # 株式 為替 市場
+        GNEWS + "%E6%A0%AA%E5%BC%8F+%E7%82%BA%E6%9B%BF+%E5%B8%82%E5%A0%B4",  # 株式 為替 市場
     ],
     "国内政治": [
-        BASE + "%E5%9B%BD%E5%86%85%E6%94%BF%E6%B2%BB+%E5%9B%BD%E4%BC%9A",        # 国内政治 国会
-        "https://www3.nhk.or.jp/rss/news/cat6.xml",
-    ],
-    "国際政治": [
-        BASE + "%E5%9B%BD%E9%9A%9B%E6%94%BF%E6%B2%BB+%E5%A4%96%E4%BA%A4",        # 国際政治 外交
+        GNEWS + "%E5%9B%BD%E5%86%85%E6%94%BF%E6%B2%BB+%E5%9B%BD%E4%BC%9A",   # 国内政治 国会
+        "https://www3.nhk.or.jp/rss/news/cat6.xml",                           # NHK政治
+        YAHOO + "domestic.xml",                                                # Yahoo!国内
     ],
     "M&A": [
-        BASE + "M%26A+%E4%BC%81%E6%A5%AD%E8%B2%B7%E5%8F%8E+%E5%90%88%E4%BD%B5",  # M&A 企業買収 合併
+        GNEWS + "%E8%B3%87%E6%9C%AC%E6%8F%90%E6%90%BA+%E8%B3%87%E6%9C%AC%E6%A5%AD%E5%8B%99%E6%8F%90%E6%90%BA",  # 資本提携 資本業務提携
+        GNEWS + "M%26A+%E4%BC%81%E6%A5%AD%E8%B2%B7%E5%8F%8E+%E5%90%88%E4%BD%B5",                                  # M&A 企業買収 合併
+        GNEWS + "%E8%B2%B7%E5%8F%8E+%E5%A3%B2%E5%8D%B4+%E4%BA%8B%E6%A5%AD%E8%AD%B2%E6%B8%A1",                    # 買収 売却 事業譲渡
     ],
 }
 
-EXCLUDE_SPORTS = {"国際政治"}
+CUTOFF_HOURS = {"M&A": 72}
+DEFAULT_CUTOFF_HOURS = 48
 
 
 def clean(text):
     return re.sub(r"<[^>]+>", "", text or "").strip()
 
 
-def fetch_news(feeds, max_items=8, used_titles=None):
-    """RSSフィードからニュースを取得（48時間以内の新着のみ・重複除外）"""
+def fetch_news(feeds, max_items=8, used_titles=None,
+               cutoff_hours=DEFAULT_CUTOFF_HOURS, category=""):
+    """RSSを取得して記事を返す。戻り値: (items, diag)"""
     if used_titles is None:
         used_titles = set()
-    cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=48)
-    items = []
+
+    cutoff      = datetime.datetime.utcnow() - datetime.timedelta(hours=cutoff_hours)
+    items       = []
+    feed_lines  = []
+    error_lines = []
+
     for url in feeds:
+        label = url.split("?")[0][-60:]
         try:
-            feed = feedparser.parse(url, request_headers={"User-Agent": "Mozilla/5.0"})
+            feed   = feedparser.parse(url, request_headers={"User-Agent": "Mozilla/5.0"})
+            status = getattr(feed, "status", None)
+
+            if status and status >= 400:
+                error_lines.append(f"  ❌ {label}\n     → HTTP {status} エラー（アクセス拒否 or URL不正）")
+                print(f"  [{category}] HTTP {status}: {label}")
+                continue
+
+            if getattr(feed, "bozo", False):
+                bozo_msg = str(getattr(feed, "bozo_exception", "不明"))
+                error_lines.append(f"  ⚠️ {label}\n     → RSS解析エラー: {bozo_msg}")
+                print(f"  [{category}] RSS解析エラー ({bozo_msg}): {label}")
+
+            total  = len(feed.entries)
+            n_pass = 0
+            n_dup  = 0
+            n_new  = 0
+
             for entry in feed.entries:
-                title = clean(entry.get("title", ""))
+                title   = clean(entry.get("title", ""))
                 summary = clean(entry.get("summary", entry.get("description", "")))[:300]
 
-                # 48時間より古い記事はスキップ
                 published = entry.get("published_parsed")
                 if published:
                     pub_dt = datetime.datetime(*published[:6])
                     if pub_dt < cutoff:
                         continue
+                n_pass += 1
 
                 if title and title not in used_titles:
                     items.append(f"・{title}：{summary}")
                     used_titles.add(title)
+                    n_new += 1
+                else:
+                    n_dup += 1
+
                 if len(items) >= max_items:
-                    return items
+                    break
+
+            if total == 0:
+                error_lines.append(f"  ❌ {label}\n     → フィードが空（記事0件）")
+            elif n_pass == 0:
+                error_lines.append(
+                    f"  ⚠️ {label}\n"
+                    f"     → 全{total}件が{cutoff_hours}時間超で日付フィルタに除外"
+                )
+            elif n_new == 0 and n_dup > 0:
+                error_lines.append(
+                    f"  ⚠️ {label}\n"
+                    f"     → {n_pass}件取得できたが全て他カテゴリと重複してスキップ"
+                )
+
+            icon = "✅" if n_new > 0 else ("⚠️" if total > 0 else "❌")
+            line = (f"  {icon} {label}\n"
+                    f"     取得:{total}件 → 日付OK:{n_pass}件 → 重複:{n_dup}件 → 新規追加:{n_new}件")
+            feed_lines.append(line)
+            print(f"  [{category}] 取得:{total} 日付OK:{n_pass} 重複:{n_dup} 新規:{n_new} | {label}")
+
         except Exception as e:
-            print(f"Warning: {url} の取得失敗: {e}")
-    return items
+            error_lines.append(f"  ❌ {label}\n     → 例外エラー: {e}")
+            print(f"  [{category}] 例外: {e} | {label}")
+
+        if len(items) >= max_items:
+            break
+
+    diag = {"category": category, "total": len(items),
+            "feeds": feed_lines, "errors": error_lines}
+    print(f"  [{category}] 合計 {len(items)}件収集")
+    return items, diag
 
 
 def summarize(client, category, news_items):
@@ -77,40 +137,59 @@ def summarize(client, category, news_items):
         return "本日のニュースを取得できませんでした。"
 
     news_text = "\n".join(news_items)
-    exclude_note = "スポーツ関連のニュースは除外してください。" if category in EXCLUDE_SPORTS else ""
+    extra = ""
+    if category == "M&A":
+        extra = ("M&A・企業買収・合併・事業譲渡・資本提携・出資に関するニュースを優先して選んでください。"
+                 "該当するニュースがない場合は「本日はM&A関連の目立った報道はありませんでした。」と1行で返してください。")
 
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=800,
         messages=[{
             "role": "user",
-            "content": f"""以下の「{category}」ニュースから重要な3件を選び、日本語で簡潔にまとめてください。{exclude_note}
-
-形式（この形式を厳守）：
-1. [タイトル]
-  概要：[2文で要点を説明]
-  ポイント：[重要な論点・背景・注目すべき点を1〜2文で]
-
-2. [タイトル]
-  概要：[2文で要点を説明]
-  ポイント：[重要な論点・背景・注目すべき点を1〜2文で]
-
-3. [タイトル]
-  概要：[2文で要点を説明]
-  ポイント：[重要な論点・背景・注目すべき点を1〜2文で]
-
-ニュース一覧：
-{news_text}
-
-注意：マークダウン記号（**や##）は使わず、プレーンテキストで出力してください。"""
+            "content": (
+                f"以下の「{category}」ニュースから重要な3件を選び、日本語で簡潔にまとめてください。{extra}\n\n"
+                "形式（この形式を厳守）：\n"
+                "1. [タイトル]\n  概要：[2文で要点を説明]\n  ポイント：[重要な論点・背景・注目すべき点を1〜2文で]\n\n"
+                "2. [タイトル]\n  概要：[2文で要点を説明]\n  ポイント：[重要な論点・背景・注目すべき点を1〜2文で]\n\n"
+                "3. [タイトル]\n  概要：[2文で要点を説明]\n  ポイント：[重要な論点・背景・注目すべき点を1〜2文で]\n\n"
+                f"ニュース一覧：\n{news_text}\n\n"
+                "注意：マークダウン記号（**や##）は使わず、プレーンテキストで出力してください。"
+            )
         }]
     )
     return response.content[0].text.strip()
 
 
+def build_diag_report(all_diag, date_str):
+    has_problem = any(d["total"] == 0 or d["errors"] for d in all_diag)
+    if not has_problem:
+        return None
+
+    lines = ["", "━━━━━━━━━━━━━━━━",
+             f"【取得エラー診断】{date_str}", "━━━━━━━━━━━━━━━━",
+             "▼ カテゴリ別 取得件数"]
+    for d in all_diag:
+        icon = "✅" if d["total"] > 0 and not d["errors"] else "❌"
+        lines.append(f"  {icon} {d['category']}：{d['total']}件")
+
+    lines += ["", "▼ フィード詳細"]
+    for d in all_diag:
+        lines.append(f"【{d['category']}】")
+        for fl in d["feeds"]:
+            lines.append(fl)
+
+    error_all = [e for d in all_diag for e in d["errors"]]
+    if error_all:
+        lines += ["", "▼ エラー一覧"]
+        lines.extend(error_all)
+
+    return "\n".join(lines)
+
+
 def post_to_slack(webhook_url, text):
     data = json.dumps({"text": text}).encode("utf-8")
-    req = urllib.request.Request(
+    req  = urllib.request.Request(
         webhook_url, data=data,
         headers={"Content-Type": "application/json"}
     )
@@ -119,35 +198,38 @@ def post_to_slack(webhook_url, text):
 
 
 def main():
-    api_key = os.environ["ANTHROPIC_API_KEY"]
-    webhook_url = os.environ["SLACK_WEBHOOK_URL"]
-
-    client = anthropic.Anthropic(api_key=api_key)
-
-    jst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+    jst      = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     date_str = jst.strftime("%Y年%m月%d日")
+    print(f"=== {date_str} ニュース収集開始 ===")
+    print(f"Python: {sys.version}")
+    print(f"UTC: {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
 
-    print(f"{date_str} のニュース収集開始...")
+    api_key     = os.environ["ANTHROPIC_API_KEY"]
+    webhook_url = os.environ["SLACK_WEBHOOK_URL"]
+    client      = anthropic.Anthropic(api_key=api_key)
 
-    parts = [f"おはようございます。本日（{date_str}）の主要ニュースです。"]
-
-    # カテゴリーをまたいで重複タイトルを管理
+    parts       = [f"おはようございます。本日（{date_str}）の主要ニュースです。"]
+    all_diag    = []
     used_titles = set()
 
     for category, feeds in RSS_FEEDS.items():
-        print(f"{category} 取得・要約中...")
-        news_items = fetch_news(feeds, used_titles=used_titles)
+        print(f"\n--- {category} ---")
+        hours = CUTOFF_HOURS.get(category, DEFAULT_CUTOFF_HOURS)
+        news_items, diag = fetch_news(
+            feeds, used_titles=used_titles,
+            cutoff_hours=hours, category=category
+        )
+        all_diag.append(diag)
         summary = summarize(client, category, news_items)
+        parts += ["", "━━━━━━━━━━━━━━━━", f"【{category}】", "━━━━━━━━━━━━━━━━", summary]
 
-        parts.append("")
-        parts.append("━━━━━━━━━━━━━━━━")
-        parts.append(f"【{category}】")
-        parts.append("━━━━━━━━━━━━━━━━")
-        parts.append(summary)
+    report = build_diag_report(all_diag, date_str)
+    if report:
+        parts.append(report)
 
     message = "\n".join(parts)
-    result = post_to_slack(webhook_url, message)
-    print(f"Slack投稿完了: {result}")
+    result  = post_to_slack(webhook_url, message)
+    print(f"\n=== Slack投稿完了: {result} ===")
 
 
 if __name__ == "__main__":
