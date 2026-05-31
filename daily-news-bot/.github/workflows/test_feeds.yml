@@ -1,0 +1,17 @@
+name: RSS疎通テスト（手動実行）
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install feedparser
+      - name: RSS フィード疎通テスト
+        run: python test_feeds.py
+        working-directory: daily-news-bot
