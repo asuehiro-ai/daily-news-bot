@@ -209,7 +209,6 @@ def main():
     client      = anthropic.Anthropic(api_key=api_key)
 
     parts       = [f"おはようございます。本日（{date_str}）の主要ニュースです。"]
-    all_diag    = []
     used_titles = set()
 
     for category, feeds in RSS_FEEDS.items():
@@ -219,13 +218,8 @@ def main():
             feeds, used_titles=used_titles,
             cutoff_hours=hours, category=category
         )
-        all_diag.append(diag)
         summary = summarize(client, category, news_items)
         parts += ["", "━━━━━━━━━━━━━━━━", f"【{category}】", "━━━━━━━━━━━━━━━━", summary]
-
-    report = build_diag_report(all_diag, date_str)
-    if report:
-        parts.append(report)
 
     message = "\n".join(parts)
     result  = post_to_slack(webhook_url, message)
