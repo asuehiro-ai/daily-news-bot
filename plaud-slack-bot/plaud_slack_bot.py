@@ -25,6 +25,13 @@ JST = ZoneInfo("Asia/Tokyo")
 MAX_PAGES = 3
 PARALLEL_WORKERS = 8
 
+# PLAUDのAPIはPython標準のUser-Agent（Python-urllib/3.x）だと403で弾くため、
+# ブラウザ経由のアクセスに見せかける（GASのUrlFetchAppはこの問題が起きない）。
+BROWSER_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+
 TOKEN_EXPIRED_MESSAGE = (
     "⚠️ *PLAUDトークン期限切れ*\n"
     "web.plaud.ai → DevTools → Network → Authorization ヘッダーから新しいトークンを取得し、"
@@ -42,7 +49,8 @@ class PlaudTokenExpiredError(Exception):
 def http_request(url, *, method="GET", headers=None, payload=None, timeout=30):
     """(status_code, body_bytes, response_headers) を返す。接続自体の失敗時は (None, None, None)。"""
     data = json.dumps(payload).encode("utf-8") if payload is not None else None
-    req = urllib.request.Request(url, data=data, headers=headers or {}, method=method)
+    merged_headers = {"User-Agent": BROWSER_USER_AGENT, **(headers or {})}
+    req = urllib.request.Request(url, data=data, headers=merged_headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.getcode(), resp.read(), resp.headers
