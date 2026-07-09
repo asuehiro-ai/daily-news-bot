@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """一度だけローカルで実行するセットアップスクリプト。
 
-面談ログ用の新しいGoogleスプレッドシートをサービスアカウントの権限で作成し、
-指定したGoogleアカウントに編集者として共有する。
+面談ログ用の新しいGoogleスプレッドシートを、SPREADSHEET_OWNER_EMAIL（employees.py）に
+サービスアカウントがなりすまして（ドメイン全体委任）作成する。作成者本人のアカウントで
+直接作られるため、後から共有設定をする必要がない。
 
-事前に GOOGLE_SERVICE_ACCOUNT_JSON 環境変数（サービスアカウントのJSON鍵の中身）を
-設定してから実行すること。
+事前に GOOGLE_SERVICE_ACCOUNT_JSON 環境変数（サービスアカウントのJSON鍵の中身）を設定し、
+ドメイン全体委任のスコープに https://www.googleapis.com/auth/spreadsheets を追加しておくこと。
 """
 
 import json
-import os
 import sys
 import urllib.error
 import urllib.request
 
-from google_auth import DRIVE_SCOPE, SHEETS_SCOPE, get_access_token
+from employees import SPREADSHEET_OWNER_EMAIL
+from google_auth import SHEETS_SCOPE, get_access_token
 
-SHARE_WITH_EMAIL = os.environ.get("MEETING_LOG_OWNER_EMAIL", "a.suehiro@le-gr.co.jp")
 SHEET_TITLE = "面談ログ"
 HEADER_ROW = ["日付", "担当社員", "取引先名", "面談者名", "役職名", "面談時刻", "議事録内容", "calendar_event_id"]
 
@@ -38,13 +38,15 @@ def api_call(url, token, *, method="GET", payload=None):
 
 
 def main():
-    token = get_access_token([SHEETS_SCOPE, DRIVE_SCOPE])
+    token = get_access_token([SHEETS_SCOPE], subject=SPREADSHEET_OWNER_EMAIL)
 
     code, body = api_call(
         "https://sheets.googleapis.com/v4/spreadsheets",
         token,
         method="POST",
-        payload={"properties": {"title": SHEET_TITLE}},
+        # sheets[].properties.titleを明示しないと、日本語ロケールのアカウントでは
+        # 既定のシート名が「シート1」になり、コード側で決め打ちの"Sheet1"と一致しなくなる。
+        payload={"properties": {"title": SHEET_TITLE}, "sheets": [{"properties": {"title": "Sheet1"}}]},
     )
     if code >= 300:
         print(f"スプレッドシート作成に失敗: HTTP {code} {body}")
@@ -63,18 +65,7 @@ def main():
         print(f"ヘッダー行の書き込みに失敗: HTTP {code} {body}")
         sys.exit(1)
 
-    code, body = api_call(
-        f"https://www.googleapis.com/drive/v3/files/{spreadsheet_id}/permissions",
-        token,
-        method="POST",
-        payload={"type": "user", "role": "writer", "emailAddress": SHARE_WITH_EMAIL},
-    )
-    if code >= 300:
-        print(f"共有設定に失敗: HTTP {code} {body}")
-        sys.exit(1)
-
-    print(f"スプレッドシートを作成しました: {spreadsheet_url}")
-    print(f"{SHARE_WITH_EMAIL} に編集者として共有しました。")
+    print(f"スプレッドシートを作成しました（{SPREADSHEET_OWNER_EMAIL}の所有）: {spreadsheet_url}")
     print()
     print(f"この値をGitHub Secretsに SPREADSHEET_ID として登録してください: {spreadsheet_id}")
 

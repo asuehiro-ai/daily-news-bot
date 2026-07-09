@@ -19,7 +19,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from employees import EMPLOYEES, PLAUD_OWNER_EMAIL
+from employees import EMPLOYEES, PLAUD_OWNER_EMAIL, SPREADSHEET_OWNER_EMAIL
 from google_auth import CALENDAR_READONLY_SCOPE, SHEETS_SCOPE, get_access_token
 from plaud_client import (
     DEFAULT_PLAUD_BASE_URL,
@@ -171,7 +171,7 @@ def main():
     date_str = get_yesterday_jst_str()
     print(f"対象日(JST): {date_str}")
 
-    sheets_token = get_access_token([SHEETS_SCOPE])
+    sheets_token = get_access_token([SHEETS_SCOPE], subject=SPREADSHEET_OWNER_EMAIL)
     existing_ids = fetch_existing_event_ids(sheets_token, spreadsheet_id)
     print(f"記録済みイベント数: {len(existing_ids)}件")
 

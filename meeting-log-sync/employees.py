@@ -7,8 +7,12 @@
 
 EMPLOYEES = [
     {"name": "末廣哲彦", "email": "a.suehiro@le-gr.co.jp"},
+    {"name": "大熊克也", "email": "k.okuma@le-gr.co.jp"},
     # {"name": "（社員名）", "email": "（メールアドレス）"},
 ]
 
 # PLAUD録音を紐付ける対象社員のメールアドレス（現状はPLAUDアカウントを持つ末廣さんのみ）
 PLAUD_OWNER_EMAIL = "a.suehiro@le-gr.co.jp"
+
+# スプレッドシートの所有者（サービスアカウントがこの人になりすまして作成・書き込みする）
+SPREADSHEET_OWNER_EMAIL = "a.suehiro@le-gr.co.jp"
