@@ -1,13 +1,12 @@
-name: PLAUD録音ダイジェストSlack投稿
-
-# meeting-log-sync（面談ログのスプレッドシート連携）に統合されたため定期実行は停止。
-# 手動実行のみ残している。
+name: 面談ログ・スプレッドシート連携
 
 on:
-  workflow_dispatch:       # GitHubのActionsタブから手動実行のみ可能
+  schedule:
+    - cron: '30 22 * * *'  # 毎朝7:30 JST (= 前日22:30 UTC)
+  workflow_dispatch:        # GitHubのActionsタブから手動実行も可能
 
 jobs:
-  post-digest:
+  sync-meeting-log:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,10 +21,12 @@ jobs:
       - name: 依存パッケージのインストール
         run: pip install -r requirements.txt
 
-      - name: 録音要約・Slack投稿
-        run: python plaud-slack-bot/plaud_slack_bot.py
+      - name: カレンダー・PLAUD突き合わせ・シート書き込み
+        run: python meeting-log-sync/sync_meeting_log.py
         env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PLAUD_TOKEN: ${{ secrets.PLAUD_TOKEN }}
           PLAUD_BASE_URL: ${{ secrets.PLAUD_BASE_URL }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
