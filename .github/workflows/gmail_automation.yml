@@ -1,0 +1,27 @@
+name: 請求書保存・メール未返信通知
+
+on:
+  schedule:
+    - cron: '0 3,15 * * *'  # 毎日0:00と12:00 JST (= 前日15:00 UTC, 3:00 UTC)
+  workflow_dispatch:         # GitHubのActionsタブから手動実行も可能
+
+jobs:
+  gmail-automation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリのチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 のセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 依存パッケージのインストール
+        run: pip install -r requirements.txt
+
+      - name: 請求書保存・未返信メール通知
+        run: python gmail-automation/gmail_automation.py
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}

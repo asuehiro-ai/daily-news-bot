@@ -18,10 +18,17 @@ description: このリポジトリで動いている自動化システム（dail
 | daily-news-bot | 稼働中 | GitHub Actions | 毎朝6:00 JST | `daily_news.py`, `.github/workflows/daily_news.yml` |
 | meeting-log-sync | 稼働中（検証中） | GitHub Actions | 毎朝7:30 JST | `meeting-log-sync/`, `.github/workflows/meeting_log_sync.yml` |
 | plaud-slack-bot | **廃止**（meeting-log-syncに統合、手動実行のみ残置） | 手動のみ | なし | `plaud-slack-bot/`, `.github/workflows/plaud_digest.yml` |
-| meeting-briefing-bot | GAS版のまま（未移行） | GAS時間主導型トリガー | 毎朝6〜7時 | `meeting-briefing-bot/meeting_briefing_bot.gs` |
-| gmail-automation | GAS版のまま（未移行） | GAS（トリガー要確認） | 不明 | `gmail-automation/gmail_automation.gs` |
+| meeting-briefing-bot | 稼働中（2026-07-10手動実行で動作確認済み） | GitHub Actions | 毎朝6:30 JST | `meeting-briefing-bot/morning_briefing.py`, `.github/workflows/morning_briefing.yml` |
+| gmail-automation | Python移行済み（**Gmail/Driveスコープの委任待ち、動作確認未**） | GitHub Actions | 毎日0:00・12:00 JST | `gmail-automation/`, `.github/workflows/gmail_automation.yml` |
 
-meeting-briefing-bot・gmail-automationの移行は、meeting-log-syncで確立したサービスアカウント＋ドメイン全体委任の仕組みにスコープを追加すれば流用できる（Gmail: `gmail.readonly`/`gmail.send`）。着手する際は改めて計画を立てること。
+GAS版（`meeting-briefing-bot/meeting_briefing_bot.gs`, `gmail-automation/gmail_automation.gs`）はまだ残置。Python版の動作確認が取れ次第、末廣さん自身にGASのトリガー停止を依頼すること（Apps ScriptエディタでのUI操作はClaude Codeから実行不可）。
+
+**gmail-automationは実行前に必須の外部作業がある**: Google Workspace管理者コンソール → セキュリティ → APIの制御 → ドメイン全体の委任 で、サービスアカウント（`meeting-log-sync@praxis-tractor-461301-v0.iam.gserviceaccount.com`）に以下のスコープを追加登録する必要がある（末廣さんのみ実行可能）。
+- `https://www.googleapis.com/auth/gmail.readonly`
+- `https://www.googleapis.com/auth/gmail.send`
+- `https://www.googleapis.com/auth/drive`
+
+未追加のままワークフローを実行すると権限エラー（invalid_grant等）になる。
 
 ---
 
