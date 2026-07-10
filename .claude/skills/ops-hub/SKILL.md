@@ -19,16 +19,14 @@ description: このリポジトリで動いている自動化システム（dail
 | meeting-log-sync | 稼働中（検証中） | GitHub Actions | 毎朝7:30 JST | `meeting-log-sync/`, `.github/workflows/meeting_log_sync.yml` |
 | plaud-slack-bot | **廃止**（meeting-log-syncに統合、手動実行のみ残置） | 手動のみ | なし | `plaud-slack-bot/`, `.github/workflows/plaud_digest.yml` |
 | meeting-briefing-bot | 稼働中（2026-07-10手動実行で動作確認済み） | GitHub Actions | 毎朝6:30 JST | `meeting-briefing-bot/morning_briefing.py`, `.github/workflows/morning_briefing.yml` |
-| gmail-automation | Python移行済み（**Gmail/Driveスコープの委任待ち、動作確認未**） | GitHub Actions | 毎日0:00・12:00 JST | `gmail-automation/`, `.github/workflows/gmail_automation.yml` |
+| gmail-automation | 稼働中（2026-07-10手動実行で動作確認済み） | GitHub Actions | 毎日0:00・12:00 JST | `gmail-automation/`, `.github/workflows/gmail_automation.yml` |
 
-GAS版（`meeting-briefing-bot/meeting_briefing_bot.gs`, `gmail-automation/gmail_automation.gs`）はまだ残置。Python版の動作確認が取れ次第、末廣さん自身にGASのトリガー停止を依頼すること（Apps ScriptエディタでのUI操作はClaude Codeから実行不可）。
+GAS版（`meeting-briefing-bot/meeting_briefing_bot.gs`, `gmail-automation/gmail_automation.gs`）はまだ残置。末廣さん自身にGASのトリガー停止を依頼すること（Apps ScriptエディタでのUI操作はClaude Codeから実行不可）。
 
-**gmail-automationは実行前に必須の外部作業がある**: Google Workspace管理者コンソール → セキュリティ → APIの制御 → ドメイン全体の委任 で、サービスアカウント（`meeting-log-sync@praxis-tractor-461301-v0.iam.gserviceaccount.com`）に以下のスコープを追加登録する必要がある（末廣さんのみ実行可能）。
-- `https://www.googleapis.com/auth/gmail.readonly`
-- `https://www.googleapis.com/auth/gmail.send`
-- `https://www.googleapis.com/auth/drive`
-
-未追加のままワークフローを実行すると権限エラー（invalid_grant等）になる。
+gmail-automationの稼働に必要だった外部作業（完了済み・記録として残す）:
+- Google Workspace管理者コンソール → セキュリティ → APIの制御 → ドメイン全体の委任 で、サービスアカウント（`meeting-log-sync@praxis-tractor-461301-v0.iam.gserviceaccount.com`）に`gmail.readonly`・`gmail.send`・`drive`スコープを追加登録
+- GCPコンソールでGmail APIを有効化（未有効化だと`Gmail API has not been used in project ...`という403エラーになる）
+- 保存先Driveフォルダが共有ドライブ上にあり、Drive APIに`supportsAllDrives=true`が無いと404 File not foundになる問題を`gmail_automation.py`側で修正済み
 
 ---
 
@@ -65,6 +63,9 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 - **サービスアカウント自身の権限でSheets/Driveファイルを作ると403**: Workspace環境では、サービスアカウント自身の識別子でのファイル作成が権限不足になりやすい。ドメイン全体委任で対象ユーザー（例: 末廣さん）に**なりすまして**作成する方式にする（`get_access_token(scopes, subject=...)`）
 - **Sheets APIで「Unable to parse range: Sheet1!...」エラー**: 日本語ロケールのGoogleアカウントでは新規スプレッドシートの既定シート名が「シート1」になり、コード側の決め打ち`"Sheet1"`と一致しない。スプレッドシート作成時に`sheets[].properties.title`で明示的に`"Sheet1"`を指定する
 - **GitHub Actionsのジョブがrunner割り当て待ちで数分止まる**: こちらの設定の問題ではなく、GitHub側の障害であることが多い。https://www.githubstatus.com でActionsの状態を確認する
+- **Gmail APIが403「has not been used in project ... or it is disabled」を返す**: ドメイン全体委任のスコープ追加とは別に、GCPコンソールでそのAPI自体を有効化する必要がある。エラーメッセージ中のURL（`console.developers.google.com/apis/api/gmail.googleapis.com/overview?project=...`）にアクセスして有効化する
+- **Drive APIが404「File not found」を返す（フォルダIDは合っているはず）**: 対象フォルダが共有ドライブ（Shared Drive）上にあり、リクエストに`supportsAllDrives=true`（検索時は`includeItemsFromAllDrives=true`も）が付いていないと、権限があってもマイドライブ扱いの検索で見つからず404になる。`files.list`・`files.create`両方にこのパラメータを付ける
+- **エラーが起きてもGitHub Actionsが「成功」表示になる**: スクリプト側がAPIエラーを例外にせず`print`でログ出力するだけの設計だと、exit codeは0のままになる。`gh run list`の成功表示だけで判断せず、`--log`の中身（特に「エラー」「件」等の実行結果サマリ行）を必ず確認すること
 
 ---
 
