@@ -1,0 +1,29 @@
+name: 朝の面談ブリーフィングSlack投稿
+
+on:
+  schedule:
+    - cron: '30 21 * * *'  # 毎朝6:30 JST (= 前日21:30 UTC)
+  workflow_dispatch:        # GitHubのActionsタブから手動実行も可能
+
+jobs:
+  post-briefing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリのチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 のセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 依存パッケージのインストール
+        run: pip install -r requirements.txt
+
+      - name: カレンダー取得・企業リサーチ・Slack投稿
+        run: python meeting-briefing-bot/morning_briefing.py
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
