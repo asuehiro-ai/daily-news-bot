@@ -22,6 +22,8 @@ description: このリポジトリで動いている自動化システム（dail
 
 `plaud-slack-bot`は2026-07-10にmeeting-log-syncへ完全統合し削除済み（独自のPLAUD再取得・Gemini再要約が二重処理になっていたため）。
 
+面談ログのスプレッドシートには、自動化が書き込む生データの「Sheet1」に加えて、閲覧しやすいように`calendar_event_id`列を除いて日付降順に整形した「面談ログ（閲覧用）」タブがある（QUERY関数で自動追従、`meeting-log-sync/setup_viewer_sheet.py`で追加済み・2026-07-11）。
+
 GAS版（`meeting-briefing-bot/meeting_briefing_bot.gs`, `gmail-automation/gmail_automation.gs`）はまだ残置。末廣さん自身にGASのトリガー停止を依頼すること（Apps ScriptエディタでのUI操作はClaude Codeから実行不可）。
 
 gmail-automationの稼働に必要だった外部作業（完了済み・記録として残す）:
