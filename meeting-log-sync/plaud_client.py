@@ -14,8 +14,11 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from zoneinfo import ZoneInfo
 
+import anthropic
+
 DEFAULT_PLAUD_BASE_URL = "https://api.plaud.ai"
 GEMINI_MODEL = "gemini-2.5-flash"  # gemini-2.0-flashは2026/6/1に提供終了済み
+CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 JST = ZoneInfo("Asia/Tokyo")
 MAX_PAGES = 3
 PARALLEL_WORKERS = 8
@@ -248,29 +251,30 @@ def fetch_s3_summary(url):
         return None
 
 
-# ── Gemini 再要約 ────────────────────────────────────────────
+# ── Claude Haiku によるダイジェスト要約（顧客発言限定） ─────────
 
 
-def build_summarize_prompt(cleaned_text):
+def build_digest_prompt(cleaned_text):
     return (
-        "以下は商談・会議の録音要約です。重要ポイントを箇条書き（- で始める）で10個以内にまとめてください。\n"
+        "以下は商談・会議の録音要約です。自社側（LEGのメンバー）の発言は除外し、"
+        "顧客側の発言・要望・懸念事項を中心に、重要ポイントを箇条書き（- で始める）で10個以内にまとめてください。\n"
         "・各ポイントは1〜2文、簡潔に\n"
         "・固有名詞・数値・期日は省略しない\n"
-        "・決定事項やアクションアイテムを優先\n"
+        "・顧客の決定事項や次のアクションを優先\n"
         "・前置きや後書きは不要。箇条書きのみ出力\n\n" + cleaned_text
     )
 
 
-def summarize_items_with_gemini(items, api_key):
-    prompts = [build_summarize_prompt(clean_summary(item["summary"])) for item in items]
-    print(f"Gemini 個別要約: {len(items)}件を並列処理")
-    with ThreadPoolExecutor(max_workers=PARALLEL_WORKERS) as ex:
-        results = list(ex.map(lambda p: gemini_generate(p, api_key), prompts))
-
-    final = []
-    for item, text in zip(items, results):
-        final.append({"title": item["title"], "createTime": item["createTime"], "summary": text} if text else item)
-    return final
+def claude_summarize(text, api_key, *, max_tokens=800):
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model=CLAUDE_MODEL, max_tokens=max_tokens, messages=[{"role": "user", "content": text}]
+        )
+        return response.content[0].text.strip()
+    except Exception as e:
+        print(f"Claude エラー: {e}")
+        return None
 
 
 # ── テキスト整形 ────────────────────────────────────────────

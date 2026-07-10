@@ -1,6 +1,6 @@
 ---
 name: ops-hub
-description: このリポジトリで動いている自動化システム（daily-news-bot・meeting-log-sync・plaud-slack-botなど）の状態確認・手動実行・トラブルシューティングを一元的に行う。「〇〇を実行して」「今日のバッチ動いた？」「エラー出てないか確認して」「新しい社員を追加して」など、システム運用に関する依頼があったときに使う。
+description: このリポジトリで動いている自動化システム（daily-news-bot・meeting-log-syncなど）の状態確認・手動実行・トラブルシューティングを一元的に行う。「〇〇を実行して」「今日のバッチ動いた？」「エラー出てないか確認して」「新しい社員を追加して」など、システム運用に関する依頼があったときに使う。
 ---
 
 # SKILL: 自動化システム一元管理（ops-hub）
@@ -16,10 +16,11 @@ description: このリポジトリで動いている自動化システム（dail
 | システム | 状態 | 実行方式 | スケジュール | 主要ファイル |
 |---|---|---|---|---|
 | daily-news-bot | 稼働中 | GitHub Actions | 毎朝6:00 JST | `daily_news.py`, `.github/workflows/daily_news.yml` |
-| meeting-log-sync | 稼働中（検証中） | GitHub Actions | 毎朝7:30 JST | `meeting-log-sync/`, `.github/workflows/meeting_log_sync.yml` |
-| plaud-slack-bot | **廃止**（meeting-log-syncに統合、手動実行のみ残置） | 手動のみ | なし | `plaud-slack-bot/`, `.github/workflows/plaud_digest.yml` |
+| meeting-log-sync | 稼働中（検証中）。面談ログのスプレッドシート記録＋Slackダイジェスト投稿（顧客発言のみClaude Haikuで要約）を兼ねる | GitHub Actions | 毎朝7:30 JST | `meeting-log-sync/`, `.github/workflows/meeting_log_sync.yml` |
 | meeting-briefing-bot | 稼働中（2026-07-10手動実行で動作確認済み） | GitHub Actions | 毎朝6:30 JST | `meeting-briefing-bot/morning_briefing.py`, `.github/workflows/morning_briefing.yml` |
 | gmail-automation | 稼働中（2026-07-10手動実行で動作確認済み） | GitHub Actions | 毎日0:00・12:00 JST | `gmail-automation/`, `.github/workflows/gmail_automation.yml` |
+
+`plaud-slack-bot`は2026-07-10にmeeting-log-syncへ完全統合し削除済み（独自のPLAUD再取得・Gemini再要約が二重処理になっていたため）。
 
 GAS版（`meeting-briefing-bot/meeting_briefing_bot.gs`, `gmail-automation/gmail_automation.gs`）はまだ残置。末廣さん自身にGASのトリガー停止を依頼すること（Apps ScriptエディタでのUI操作はClaude Codeから実行不可）。
 
@@ -66,6 +67,7 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 - **Gmail APIが403「has not been used in project ... or it is disabled」を返す**: ドメイン全体委任のスコープ追加とは別に、GCPコンソールでそのAPI自体を有効化する必要がある。エラーメッセージ中のURL（`console.developers.google.com/apis/api/gmail.googleapis.com/overview?project=...`）にアクセスして有効化する
 - **Drive APIが404「File not found」を返す（フォルダIDは合っているはず）**: 対象フォルダが共有ドライブ（Shared Drive）上にあり、リクエストに`supportsAllDrives=true`（検索時は`includeItemsFromAllDrives=true`も）が付いていないと、権限があってもマイドライブ扱いの検索で見つからず404になる。`files.list`・`files.create`両方にこのパラメータを付ける
 - **エラーが起きてもGitHub Actionsが「成功」表示になる**: スクリプト側がAPIエラーを例外にせず`print`でログ出力するだけの設計だと、exit codeは0のままになる。`gh run list`の成功表示だけで判断せず、`--log`の中身（特に「エラー」「件」等の実行結果サマリ行）を必ず確認すること
+- **Gemini再要約でノイズ・コストが増える**: `plaud-slack-bot`が録音1件ごとにGemini APIを呼んでいたが、プロンプトに「顧客発言のみ抽出」の指示がなく自社側発話が混入していた。`meeting-log-sync/plaud_client.py`の`claude_summarize`＋`build_digest_prompt`（Claude Haiku、顧客発言限定プロンプト）に切り替え、`sync_meeting_log.py`に統合して解決（2026-07-10）。`ANTHROPIC_API_KEY`は`daily_news.py`用に既に登録済みのSecretを流用でき、新規登録は不要だった
 
 ---
 
