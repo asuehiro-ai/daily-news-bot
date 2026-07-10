@@ -173,7 +173,10 @@ def is_automated_email(message):
 def drive_file_exists(token, filename):
     escaped = filename.replace("\\", "\\\\").replace("'", "\\'")
     query = f"name = '{escaped}' and '{FOLDER_ID}' in parents and trashed = false"
-    url = f"https://www.googleapis.com/drive/v3/files?q={urllib.parse.quote(query)}&fields=files(id)"
+    url = (
+        f"https://www.googleapis.com/drive/v3/files?q={urllib.parse.quote(query)}"
+        "&fields=files(id)&supportsAllDrives=true&includeItemsFromAllDrives=true"
+    )
     data = google_get(token, url)
     return bool(data and data.get("files"))
 
@@ -190,7 +193,7 @@ def drive_upload(token, filename, mime_type, file_bytes):
     ).encode("utf-8") + file_bytes + f"\r\n--{boundary}--".encode("utf-8")
 
     req = urllib.request.Request(
-        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true",
         data=body,
         method="POST",
         headers={"Authorization": f"Bearer {token}", "Content-Type": f"multipart/related; boundary={boundary}"},
