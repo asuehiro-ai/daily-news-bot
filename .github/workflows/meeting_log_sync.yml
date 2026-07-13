@@ -2,7 +2,7 @@ name: 面談ログ・スプレッドシート連携
 
 on:
   schedule:
-    - cron: '30 22 * * *'  # 毎朝7:30 JST (= 前日22:30 UTC)
+    - cron: '0 21 * * *'  # 毎朝6:00 JST (= 前日21:00 UTC)
   workflow_dispatch:        # GitHubのActionsタブから手動実行も可能
 
 jobs:
