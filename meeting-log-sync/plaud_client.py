@@ -196,6 +196,38 @@ def fetch_recordings_by_date(token, base_url, date_str):
     return recordings
 
 
+def fetch_recordings_in_range(token, base_url, start_date_str, end_date_str, max_pages=60):
+    """PLAUD側の[start_date_str, end_date_str]（JST、両端含む）の録音一覧を返す。過去分の一括バックフィル用。"""
+    recordings = []
+    seen_ids = set()
+
+    for page in range(1, max_pages + 1):
+        data = plaud_get(token, f"{base_url}/file/simple/web?page={page}&page_size=50")
+        if not data:
+            break
+        files = to_array(data)
+        if not files:
+            break
+
+        any_in_or_after_start = False
+        for f in files:
+            file_date_str = to_jst_date_str(f.get("start_time") or f.get("create_time") or f.get("created_at"))
+            if not file_date_str:
+                continue
+            if file_date_str >= start_date_str:
+                any_in_or_after_start = True
+            if start_date_str <= file_date_str <= end_date_str and f.get("id") not in seen_ids:
+                seen_ids.add(f.get("id"))
+                recordings.append(f)
+
+        if not any_in_or_after_start or len(files) < 50:
+            break
+        if page < max_pages:
+            time.sleep(0.3)
+
+    return recordings
+
+
 def fetch_all_summary_items(token, base_url, recordings):
     if not recordings:
         return []
