@@ -21,7 +21,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from employees import EMPLOYEES, PLAUD_OWNER_EMAIL, SPREADSHEET_OWNER_EMAIL
+from employees import EMPLOYEES, SPREADSHEET_OWNER_EMAIL
 from google_auth import CALENDAR_READONLY_SCOPE, SHEETS_SCOPE, get_access_token
 from plaud_client import (
     DEFAULT_PLAUD_BASE_URL,
@@ -246,7 +246,7 @@ def main():
             person_name, title = split_person_title(parsed["person_raw"], gemini_key)
 
             transcript = ""
-            if employee["email"] == PLAUD_OWNER_EMAIL and plaud_items and meeting_dt:
+            if plaud_items and meeting_dt:
                 matched = match_plaud_summary(meeting_dt, plaud_items)
                 if matched:
                     transcript = clean_summary(matched["summary"])
