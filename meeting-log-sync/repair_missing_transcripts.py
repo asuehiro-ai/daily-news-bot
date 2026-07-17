@@ -8,7 +8,8 @@ sync_meeting_log.py・backfill_meeting_log.pyがPLAUDマッチングを末廣さ
 使い方: python meeting-log-sync/repair_missing_transcripts.py --from 2026-06-01 --to 2026-07-13 [--dry-run]
 
 必須環境変数: GOOGLE_SERVICE_ACCOUNT_JSON, SPREADSHEET_ID, PLAUD_TOKEN
-任意環境変数: PLAUD_BASE_URL
+任意環境変数: PLAUD_BASE_URL,
+             ANTHROPIC_API_KEY（未設定時は要約をローカル抽出のみで代用。sync_meeting_log.pyと同じ要約に揃えるため設定推奨）
 """
 
 import argparse
@@ -32,6 +33,7 @@ from sync_meeting_log import (
     match_plaud_summary,
     parse_event_title,
     sheets_api_call,
+    summarize_for_log,
 )
 
 
@@ -88,6 +90,7 @@ def main():
     to_date = args.to_date or (datetime.datetime.now(JST) - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
     spreadsheet_id = os.environ.get("SPREADSHEET_ID")
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
     plaud_token = os.environ.get("PLAUD_TOKEN")
     plaud_base_url = os.environ.get("PLAUD_BASE_URL") or DEFAULT_PLAUD_BASE_URL
 
@@ -139,7 +142,7 @@ def main():
                     matched = match_plaud_summary(meeting_dt, plaud_items)
 
                 if not current_transcript and matched:
-                    transcript = clean_summary(matched["summary"])
+                    transcript = summarize_for_log(clean_summary(matched["summary"]), anthropic_key)
                     updates.append((row_number, transcript))
                     print(f"{date_str} {employee['name']} {parsed['company']}: 行{row_number}に議事録を反映")
 

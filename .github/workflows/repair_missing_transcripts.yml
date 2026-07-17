@@ -34,6 +34,7 @@ jobs:
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PLAUD_TOKEN: ${{ secrets.PLAUD_TOKEN }}
           PLAUD_BASE_URL: ${{ secrets.PLAUD_BASE_URL }}
           FROM_DATE: ${{ github.event.inputs.from_date }}

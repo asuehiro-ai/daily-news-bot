@@ -1,7 +1,7 @@
-"""PLAUD NOTE API・Gemini API・Slack通知の共通ロジック。
+"""PLAUD NOTE API・Gemini API・Slack通知（エラーアラート用）の共通ロジック。
 
-plaud-slack-bot/plaud_slack_bot.py（Slackダイジェスト投稿）と
-meeting-log-sync/sync_meeting_log.py（スプレッドシート連携）の両方から使われる。
+meeting-log-sync配下の各スクリプト（sync_meeting_log.py・backfill_meeting_log.py・
+repair_missing_transcripts.py）から使われる。
 """
 
 import datetime
@@ -283,17 +283,24 @@ def fetch_s3_summary(url):
         return None
 
 
-# ── Claude Haiku によるダイジェスト要約（顧客発言限定） ─────────
+# ── Claude Haiku による面談ログ要約（非参加者にも伝わるレベル） ─────
 
 
-def build_digest_prompt(cleaned_text):
+def build_log_summary_prompt(cleaned_text):
     return (
-        "以下は商談・会議の録音要約です。自社側（LEGのメンバー）の発言は除外し、"
-        "顧客側の発言・要望・懸念事項を中心に、重要ポイントを箇条書き（- で始める）で10個以内にまとめてください。\n"
-        "・各ポイントは1〜2文、簡潔に\n"
+        "以下は商談・会議の録音を自動要約したテキストです。話者ラベルが不正確な場合があるため、"
+        "発言者の呼称ではなく内容から「相手企業側の発言・状況」と「LEG側の説明・提案」を判断してください。"
+        "この会議に参加していない社内メンバーが読んでも状況を理解できるレベルで、"
+        "全体を300〜500字程度に要約してください。\n"
+        "【盛り込む内容】\n"
+        "・相手企業の状況・課題・要望\n"
+        "・LEG側の説明・提案の要点\n"
+        "・決定事項\n"
+        "・次回アクション（誰が・何を・いつまでに。読み取れない場合は「要確認」と明記）\n"
+        "・見出し番号や記号は付けず、自然な文章でまとめる\n"
         "・固有名詞・数値・期日は省略しない\n"
-        "・顧客の決定事項や次のアクションを優先\n"
-        "・前置きや後書きは不要。箇条書きのみ出力\n\n" + cleaned_text
+        "・元のテキストにない事実を創作しない\n"
+        "・前置きや後書きは不要。要約本文のみ出力\n\n" + cleaned_text
     )
 
 
