@@ -162,7 +162,8 @@ def summarize_for_log(cleaned_summary, anthropic_api_key):
     if anthropic_api_key:
         summary = claude_summarize(build_log_summary_prompt(cleaned_summary), anthropic_api_key)
         if summary:
-            return summary
+            # プロンプトで禁止していても「# 要約」等のタイトル行が付くことがあるため機械的に除去する
+            return re.sub(r"^#{1,3}\s*\S.*\n+", "", summary.strip(), count=1)
     return extract_key_points(cleaned_summary)
 
 
