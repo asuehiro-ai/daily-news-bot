@@ -5,7 +5,7 @@
 PLAUDへの再アクセスは不要。既存のG列テキスト（新ロジック導入前に記録された、
 PLAUDの生っぽい要約）をそのまま新しい要約プロンプトに通して上書きする。
 
-使い方: python meeting-log-sync/resummarize_existing_logs.py --until 2026-06-30 [--dry-run]
+使い方: python meeting-log-sync/resummarize_existing_logs.py --until 2026-06-30 [--from 2026-06-01] [--dry-run]
 
 必須環境変数: GOOGLE_SERVICE_ACCOUNT_JSON, SPREADSHEET_ID, ANTHROPIC_API_KEY
 """
@@ -49,6 +49,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--until", dest="until_date", required=True, help="この日付以前（YYYY-MM-DD、当日を含む）を対象にする")
+    parser.add_argument("--from", dest="from_date", default=None, help="この日付以降（YYYY-MM-DD、当日を含む。省略時は下限なし）を対象にする")
     parser.add_argument("--dry-run", action="store_true", help="更新をせずログ出力のみ行う")
     args = parser.parse_args()
 
@@ -62,7 +63,7 @@ def main():
         print("ANTHROPIC_API_KEY が未設定です")
         sys.exit(1)
 
-    print(f"対象: {args.until_date} 以前の全行")
+    print(f"対象: {args.from_date or '(下限なし)'} 〜 {args.until_date}")
 
     sheets_token = get_access_token([SHEETS_SCOPE], subject=SPREADSHEET_OWNER_EMAIL)
     rows = fetch_rows(sheets_token, spreadsheet_id)
@@ -74,6 +75,8 @@ def main():
         date_str = row[0] if len(row) > 0 else ""
         transcript = row[6] if len(row) > 6 else ""
         if not date_str or date_str > args.until_date:
+            continue
+        if args.from_date and date_str < args.from_date:
             continue
         if not transcript:
             continue

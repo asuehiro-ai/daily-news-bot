@@ -6,6 +6,9 @@ on:
       until_date:
         description: 'この日付以前（YYYY-MM-DD、当日を含む）を対象にする'
         required: true
+      from_date:
+        description: 'この日付以降（YYYY-MM-DD、当日を含む。省略時は下限なし）を対象にする'
+        required: false
       dry_run:
         description: 'true にすると更新せず内容確認のみ'
         required: false
@@ -33,8 +36,10 @@ jobs:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           UNTIL_DATE: ${{ github.event.inputs.until_date }}
+          FROM_DATE: ${{ github.event.inputs.from_date }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
           ARGS="--until $UNTIL_DATE"
+          if [ -n "$FROM_DATE" ]; then ARGS="$ARGS --from $FROM_DATE"; fi
           if [ "$DRY_RUN" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           python meeting-log-sync/resummarize_existing_logs.py $ARGS
