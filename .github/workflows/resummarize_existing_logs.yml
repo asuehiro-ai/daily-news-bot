@@ -1,0 +1,40 @@
+name: 面談ログ・既存分の要約書き直し
+
+on:
+  workflow_dispatch:
+    inputs:
+      until_date:
+        description: 'この日付以前（YYYY-MM-DD、当日を含む）を対象にする'
+        required: true
+      dry_run:
+        description: 'true にすると更新せず内容確認のみ'
+        required: false
+        default: 'true'
+
+jobs:
+  resummarize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリのチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 のセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 依存パッケージのインストール
+        run: pip install -r requirements.txt
+
+      - name: 既存分の要約書き直し実行
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          UNTIL_DATE: ${{ github.event.inputs.until_date }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          ARGS="--until $UNTIL_DATE"
+          if [ "$DRY_RUN" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python meeting-log-sync/resummarize_existing_logs.py $ARGS
