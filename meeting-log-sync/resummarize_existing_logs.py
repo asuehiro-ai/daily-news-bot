@@ -25,7 +25,7 @@ def fetch_rows(token, spreadsheet_id):
     )
     if code != 200:
         print(f"既存データ取得エラー: HTTP {code} {body}")
-        return []
+        return None
     return body.get("values", [])
 
 
@@ -67,6 +67,8 @@ def main():
 
     sheets_token = get_access_token([SHEETS_SCOPE], subject=SPREADSHEET_OWNER_EMAIL)
     rows = fetch_rows(sheets_token, spreadsheet_id)
+    if rows is None:
+        sys.exit(1)
     print(f"シート行数: {len(rows)}件")
 
     updates = []
