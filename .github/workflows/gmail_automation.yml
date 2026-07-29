@@ -1,8 +1,9 @@
 name: 請求書保存・メール未返信通知
 
 on:
-  schedule:
-    - cron: '0 3,15 * * *'  # 毎日0:00と12:00 JST (= 前日15:00 UTC, 3:00 UTC)
+  # schedule:
+  #   - cron: '0 3,15 * * *'  # 毎日0:00と12:00 JST (= 前日15:00 UTC, 3:00 UTC)
+  #   2026-07-29 自動配信停止依頼により無効化。再開する場合は上記2行のコメントを外す。
   workflow_dispatch:         # GitHubのActionsタブから手動実行も可能
 
 jobs:
