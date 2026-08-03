@@ -19,6 +19,7 @@ description: このリポジトリで動いている自動化システム（dail
 | meeting-log-sync | 稼働中（検証中）。面談ログのスプレッドシート記録＋Slackダイジェスト投稿（顧客発言のみClaude Haikuで要約）を兼ねる | GitHub Actions | 毎朝7:30 JST | `meeting-log-sync/`, `.github/workflows/meeting_log_sync.yml` |
 | meeting-briefing-bot | 稼働中（2026-07-10手動実行で動作確認済み） | GitHub Actions | 毎朝6:30 JST | `meeting-briefing-bot/morning_briefing.py`, `.github/workflows/morning_briefing.yml` |
 | gmail-automation | 稼働中（2026-07-10手動実行で動作確認済み） | GitHub Actions | 毎日0:00・12:00 JST | `gmail-automation/`, `.github/workflows/gmail_automation.yml` |
+| keiei-manabi-bot | 新規追加（2026-08-04）。経営者向け学習コンテンツ（財務・マーケティング・組織/リーダーシップ・事業承継・M&A・法務・歴史等を日替わりローテーション）をClaude Sonnetで生成しSlackに投稿。SLACK_WEBHOOK_URLはdaily-news-botと共用（同じ投稿先） | GitHub Actions | 毎朝7:00 JST | `keiei-manabi-bot/keiei_manabi.py`, `.github/workflows/keiei_manabi.yml` |
 
 `plaud-slack-bot`は2026-07-10にmeeting-log-syncへ完全統合し削除済み（独自のPLAUD再取得・Gemini再要約が二重処理になっていたため）。
 

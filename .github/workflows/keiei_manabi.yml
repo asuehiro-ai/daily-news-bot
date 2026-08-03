@@ -1,0 +1,28 @@
+name: 経営者の学びSlack投稿
+
+on:
+  schedule:
+    - cron: '0 22 * * *'  # 毎朝7:00 JST (= 前日22:00 UTC)
+  workflow_dispatch:       # GitHubのActionsタブから手動実行も可能
+
+jobs:
+  post-keiei-manabi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリのチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 のセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 依存パッケージのインストール
+        run: pip install -r requirements.txt
+
+      - name: 学習コンテンツ生成・Slack投稿
+        run: python keiei-manabi-bot/keiei_manabi.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
