@@ -42,6 +42,8 @@ def generate_content(client, theme, date_str):
 
 読者像：中小企業のオーナー経営者。事業承継やM&Aにも関心がある。
 
+執筆前に、必ずWeb検索を使ってテーマに関連する信頼できる情報源（ビジネス系メディア、専門機関、書籍紹介記事、公的機関の解説等）を2〜3件調べ、その内容を踏まえて書いてください。検索結果の文章をそのまま長く引き写すのではなく、自分の言葉で要約・解説してください。
+
 出力形式（この形式を厳守。マークダウン記号（**や##）は使わずプレーンテキストで）：
 
 [今日のタイトル（テーマ「{theme}」の中の具体的な切り口を反映したもの）]
@@ -69,13 +71,32 @@ def generate_content(client, theme, date_str):
 ・具体的な財務数値を断定しない（「必ず〇億円になる」等はNG）
 ・比喩やたとえ話を1つ以上使い、経営者が実感を持てるように書く
 ・本日の日付（{date_str}）や曜日ネタには触れず、テーマそのものの内容に集中する
+・本文中に参考文献リストや出典表記は書かない（出典は別途システム側で付与する）
 """
     response = client.messages.create(
         model=MODEL,
-        max_tokens=3000,
+        max_tokens=4000,
+        tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 5}],
         messages=[{"role": "user", "content": prompt}],
     )
-    return response.content[0].text.strip()
+
+    text_parts = []
+    sources = []
+    seen_urls = set()
+    for block in response.content:
+        if block.type != "text":
+            continue
+        text_parts.append(block.text)
+        for citation in (getattr(block, "citations", None) or []):
+            url = getattr(citation, "url", None)
+            if not url or url in seen_urls:
+                continue
+            seen_urls.add(url)
+            title = getattr(citation, "title", None) or url
+            sources.append((title, url))
+
+    content = "".join(text_parts).strip()
+    return content, sources
 
 
 def main():
@@ -90,13 +111,21 @@ def main():
     theme = THEMES[day_of_year % len(THEMES)]
 
     print(f"{date_str} のテーマ: {theme}")
-    content = generate_content(client, theme, date_str)
+    content, sources = generate_content(client, theme, date_str)
+    print(f"参考文献: {len(sources)}件")
+
+    if sources:
+        source_lines = "\n".join(f"・{title}\n  {url}" for title, url in sources)
+        sources_block = f"\n\n━━━━━━━━━━━━━━━━\n参考文献・参考サイト：\n{source_lines}"
+    else:
+        sources_block = ""
 
     message = (
         f"おはようございます。本日（{date_str}）の経営者の学びです。\n\n"
         f"テーマ：{theme}\n\n"
         f"━━━━━━━━━━━━━━━━\n\n"
         f"{content}"
+        f"{sources_block}"
     )
 
     result = post_to_slack(webhook_url, message)
