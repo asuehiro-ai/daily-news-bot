@@ -112,6 +112,7 @@ def main():
 
     print(f"{date_str} のテーマ: {theme}")
     content, sources = generate_content(client, theme, date_str)
+    sources = sources[:6]
     print(f"参考文献: {len(sources)}件")
 
     if sources:
